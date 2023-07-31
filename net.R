@@ -3,29 +3,40 @@
 library(datasets)
 
 data(iris)
-x <- iris[  , 1:4]
-y <- iris[  , 5]
+x <- iris[4, 1:4]
+y <- iris[, 5]
 
 iris$Species <- as.numeric(iris$Species)
 
-num_inputs <- 4
-num_neurons <- ncol(x)
+NUM_INPUTS  <- 4
+NUM_NEURONS <- 3
+INPUT_SIZE  <- nrow(x)
 
 generate_random_weights <- function(num_inputs, num_neurons) {
-    weights <- vector('list', num_inputs)
+    weights <- vector('list', NUM_INPUTS)
 
-    for (i in 1:num_inputs) {
-        weights[[i]] <- rnorm(num_neurons)
+    for (i in 1:NUM_INPUTS) {
+        weights[[i]] <- rnorm(NUM_NEURONS)
     }
 
     return(weights)
 }
 
 generate_random_biases <- function(num_neurons) {
-    biases <- rnorm(num_neurons)
-    return(biases)
+    return(rnorm(NUM_NEURONS))
 }
 
-weights <- generate_random_weights(num_inputs, num_neurons)
-biases <- generate_random_biases(num_neurons)
+dense_layer <- function(input) {
+    weights <- generate_random_weights(NUM_INPUTS, NUM_NEURONS)
+    biases  <- generate_random_biases(NUM_NEURONS)
+    output  <- vector('list', NUM_NEURONS)
 
+    for (i in 1:NUM_NEURONS) {
+        output[[i]] <- sum(input * weights[[i]]) + biases[i]
+    }
+
+    return(output)
+}
+
+output <- dense_layer(input = x)
+print(output)

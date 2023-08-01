@@ -38,5 +38,19 @@ dense_layer <- function(input) {
     return(output)
 }
 
-output <- dense_layer(input = x)
-print(output)
+relu <- function(input) {
+    output <- vector('numeric', NUM_NEURONS)
+
+    for (i in 1:NUM_NEURONS) {
+        if (input[i] > 0) {
+            output[[i]] <- input[i]
+        } else {
+            output[[i]] <- 0.0
+        }
+    }
+    
+    return(output)
+}
+
+st_layer_output <- dense_layer(input = x)
+st_activation   <- relu(input = st_layer_output) 

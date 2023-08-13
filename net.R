@@ -32,25 +32,26 @@ dense_layer <- function(input) {
     output  <- vector('list', NUM_NEURONS)
 
     for (i in 1:NUM_NEURONS) {
-        output[[i]] <- sum(input * weights[[i]]) + biases[i]
+        output[[i]] <- sum(input * weights[i]) + biases[i]
     }
 
     return(output)
 }
 
 relu <- function(input) {
-    output <- vector('numeric', NUM_NEURONS)
-
-    for (i in 1:NUM_NEURONS) {
-        if (input[i] > 0) {
-            output[[i]] <- input[i]
-        } else {
-            output[[i]] <- 0.0
-        }
-    }
-    
+    output <- pmax(input, 0)
     return(output)
 }
 
+softmax <- function(input) {
+    exp_input <- exp(as.numeric(input))
+    exp_sum   <- sum(exp_input)
+    output    <- exp_input / exp_sum
+
+    return (output)
+}
+
 st_layer_output <- dense_layer(input = x)
-st_activation   <- relu(input = st_layer_output) 
+relu_output     <- relu(input = st_layer_output)
+st_activation   <- softmax(input = relu_output)
+

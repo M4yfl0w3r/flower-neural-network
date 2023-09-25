@@ -12,5 +12,8 @@ class Softmax:
 
     def forward(self, input: np.ndarray) -> np.ndarray:
         exp_values: np.ndarray = np.exp(input.data)
-        output: np.ndarray = exp_values / np.sum(exp_values, axis = 1)
+        output: np.ndarray = exp_values / np.sum(exp_values, axis = 0)
         return output
+    
+    def backward(self):
+        pass

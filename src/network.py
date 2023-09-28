@@ -24,6 +24,7 @@ class NeuralNetwork:
         self.loss: float = 0.0
 
     def forward(self, epoch: int):
+        # TODO: Change to more generic
         output = self.layers[0].forward(self.params.input)
         output = self.layers[1].forward(output)
         output = self.layers[2].forward(output)
@@ -47,9 +48,10 @@ class NeuralNetwork:
         output = self.layers[0].backward(output)
 
     def update_params(self):
-        self.layers[0].update_params(self.params.learning_rate)
-        self.layers[2].update_params(self.params.learning_rate)
-        self.layers[4].update_params(self.params.learning_rate)
+        if self.params.optimizer == 'SGD':
+            self.layers[0].update_params(self.params.learning_rate)
+            self.layers[2].update_params(self.params.learning_rate)
+            self.layers[4].update_params(self.params.learning_rate)
 
     def train(self):
         for epoch in range(self.params.num_epochs):

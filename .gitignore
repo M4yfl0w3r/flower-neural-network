@@ -3,6 +3,4 @@
 
 src/test.py
 src/full.py
-src/network.py
-src/ex.py
 src/__pycache__

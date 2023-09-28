@@ -3,6 +3,7 @@ import numpy as np
 from sklearn import preprocessing
 from sklearn.datasets import load_iris
 
+
 def iris():
     iris = load_iris()
     data: np.ndarray = np.array(iris.data)

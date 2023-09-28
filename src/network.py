@@ -1,7 +1,6 @@
 import numpy as np
 
 from layer import Layer
-from layer import DenseLayer 
 from utils import model_loss
 from utils import model_accuracy 
 
@@ -20,36 +19,40 @@ class NeuralNetwork:
     def __init__(self, layers: list[Layer], params: Params):
         self.layers = layers 
         self.params = params
-        self.activation_output = None
-
+        
+        self.forward_output: np.ndarray = None
         self.loss: float = 0.0
 
-    def forward(self):
-        output: np.ndarray = self.layers[0].forward(self.params.input)
+    def forward(self, epoch: int):
+        output = self.layers[0].forward(self.params.input)
+        output = self.layers[1].forward(output)
+        output = self.layers[2].forward(output)
+        output = self.layers[3].forward(output)
+        output = self.layers[4].forward(output)
+        output = self.layers[5].forward(output)
+        self.loss = self.layers[6].forward(output, self.params.labels)
 
-        for i in range(1, len(self.layers) - 1):
-            output = self.layers[i].forward(output)
-        
-        self.activation_output = output 
-        self.loss = self.layers[len(self.layers)].forward(output, self.params.labels)
-
-    def evaluate(self, epoch: int):
-        loss = model_loss(self.loss)
-        accuracy = model_accuracy(self.activation_output, self.params.labels)
+        self.forward_output = output
+        loss: float = model_loss(self.loss)
+        accuracy: float = model_accuracy(output, self.params.labels)
         print(f'Epoch: {epoch} | Loss: {loss:.3f} | Accuracy = {accuracy:.3f}')
 
     def backward(self):
-
-        output = loss.backward(output, labels)
-        output = softmax.backward(output)
-        output = layer_3.backward(output)
-        output = relu_2.backward(output)
-        output = layer_2.backward(output)
-        output = relu_1.backward(output)
-        output = layer_1.backward(output)
+        output = self.layers[6].backward(self.forward_output, self.params.labels)
+        output = self.layers[5].backward(output)
+        output = self.layers[4].backward(output)
+        output = self.layers[3].backward(output)
+        output = self.layers[2].backward(output)
+        output = self.layers[1].backward(output)
+        output = self.layers[0].backward(output)
 
     def update_params(self):
-        pass
+        self.layers[0].update_params(self.params.learning_rate)
+        self.layers[2].update_params(self.params.learning_rate)
+        self.layers[4].update_params(self.params.learning_rate)
 
     def train(self):
-        pass
+        for epoch in range(self.params.num_epochs):
+            self.forward(epoch)
+            self.backward()
+            self.update_params()

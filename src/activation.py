@@ -1,30 +1,27 @@
 import numpy as np
 
+from layer import Layer
 
-class ReLU:
-    
-    def __init__(self):
-        self.input: np.ndarray = None
+
+class ReLU(Layer):
 
     def forward(self, input: np.ndarray) -> np.ndarray:
-        output: np.ndarray = np.maximum(0, input)
-        self.input = input
-        return output
+        self.forward_output = np.maximum(0, input)
+        self.forward_input = input
+        return self.forward_output 
 
     def backward(self, gradient: np.ndarray) -> np.ndarray:
-        output: np.ndarray = np.where(self.input <= 0, 0, 1) * gradient
-        return output
+        self.backward_output = np.where(self.forward_input <= 0, 0, 1) * gradient
+        return self.backward_output
 
 
-class Softmax:
-
-    def __init__(self):
-        self.output = None
+class Softmax(Layer):
 
     def forward(self, input: np.ndarray) -> np.ndarray:
-        exp_values: np.ndarray = np.exp(input.data)
-        self.output = exp_values / np.sum(exp_values, axis = 0)
-        return self.output
+        self.forward_input = input
+        exp_values: np.ndarray = np.exp(input)
+        self.forward_output = exp_values / np.sum(exp_values, axis = 1, keepdims = True)
+        return self.forward_output
     
     def backward(self, gradient: np.ndarray) -> np.ndarray:
         softmax_gradient: list = []
@@ -33,7 +30,8 @@ class Softmax:
             s: np.ndarray = input.reshape(-1, 1)
             return np.diagflat(s) - np.dot(s, s.T)
         
-        for output, incoming_grad in zip(self.output, gradient):
+        for output, incoming_grad in zip(self.forward_output, gradient):
             softmax_gradient.append(np.dot(grad_(output), incoming_grad))
 
-        return np.array(softmax_gradient)
+        self.backward_output = np.array(softmax_gradient)
+        return self.backward_output

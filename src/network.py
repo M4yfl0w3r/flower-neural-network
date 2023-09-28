@@ -1,26 +1,55 @@
 import numpy as np
 
+from layer import Layer
+from layer import DenseLayer 
+from utils import model_loss
+from utils import model_accuracy 
 
-class DenseLayer:
+class Params:
+    input: np.ndarray = None
+    labels: np.ndarray = None
 
-    def __init__(self, num_inputs: int, num_neurons: int):
-        self.weights: np.ndarray = np.random.rand(num_inputs, num_neurons)
-        self.biases: np.ndarray = np.random.rand(1, num_neurons)
-        
-        self.input: np.ndarray = None
-        self.output: np.ndarray = None
-
-        self.weights_gradient: np.ndarray = None
-        self.biases_gradient: np.ndarray = None
-        self.input_gradient: np.ndarray = None
-
-    def forward(self, input: np.ndarray) -> np.ndarray:
-        self.output = np.dot(input, self.weights) + self.biases
-        self.input = input
-        return self.output
+    optimizer: str = 'SGD'
     
-    def backward(self, gradient: np.ndarray) -> np.ndarray:
-        self.weights_gradient = np.dot(np.transpose(self.input), gradient)
-        self.biases_gradient = np.sum(1 * gradient, axis = 0)
-        self.input_gradient = np.dot(gradient, np.transpose(self.weights))
-        return self.input_gradient
+    num_epochs: int = 1000
+    learning_rate: float = 1.0
+
+
+class NeuralNetwork:
+
+    def __init__(self, layers: list[Layer], params: Params):
+        self.layers = layers 
+        self.params = params
+        self.activation_output = None
+
+        self.loss: float = 0.0
+
+    def forward(self):
+        output: np.ndarray = self.layers[0].forward(self.params.input)
+
+        for i in range(1, len(self.layers) - 1):
+            output = self.layers[i].forward(output)
+        
+        self.activation_output = output 
+        self.loss = self.layers[len(self.layers)].forward(output, self.params.labels)
+
+    def evaluate(self, epoch: int):
+        loss = model_loss(self.loss)
+        accuracy = model_accuracy(self.activation_output, self.params.labels)
+        print(f'Epoch: {epoch} | Loss: {loss:.3f} | Accuracy = {accuracy:.3f}')
+
+    def backward(self):
+
+        output = loss.backward(output, labels)
+        output = softmax.backward(output)
+        output = layer_3.backward(output)
+        output = relu_2.backward(output)
+        output = layer_2.backward(output)
+        output = relu_1.backward(output)
+        output = layer_1.backward(output)
+
+    def update_params(self):
+        pass
+
+    def train(self):
+        pass

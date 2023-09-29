@@ -39,7 +39,7 @@ class NeuralNetwork:
         print(f'Epoch: {epoch} | Loss: {loss:.3f} | Accuracy = {accuracy:.3f}')
 
     def backward(self):
-        output = self.layers[6].backward(self.forward_output, self.params.labels)
+        output = self.layers[6].backward(self.forward_output)
         output = self.layers[5].backward(output)
         output = self.layers[4].backward(output)
         output = self.layers[3].backward(output)

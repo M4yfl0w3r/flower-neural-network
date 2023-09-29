@@ -7,9 +7,7 @@ from network import NeuralNetwork
 from network import Params
 
 
-X, y = spiral_data(150, 3)
-input = X
-labels = y
+input, labels = spiral_data(150, 3)
 
 layers = [
     DenseLayer(num_inputs = 2, num_neurons = 64),

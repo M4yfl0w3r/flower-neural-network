@@ -5,76 +5,89 @@
 #include <string_view>
 #include <algorithm>
 #include <iostream>
-#include <array>
+#include <vector>
 
 using namespace std::string_view_literals;
 
 namespace Mayflower
 {
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    class Tensor
+    class Tensor 
     {
     public:
-        constexpr Tensor()
+        Tensor() = default;
+
+        constexpr explicit Tensor(std::vector<float> data)
+            : m_data{data}
         {
-            fill(Type{});
+            m_shape = {1, std::size(data)};
         }
 
-        explicit constexpr Tensor(const std::array<Type, Rows * Cols>& array)
-            : m_array{array}
+        constexpr explicit Tensor(std::pair<unsigned, unsigned> shape)
+            : m_shape{shape}
         {
+            m_data.resize(shape.first * shape.second);
+            fill(0.0f);
+        }
+        
+        constexpr auto fill(float value) -> void
+        {
+            std::ranges::fill(m_data, value);
         }
 
-        constexpr auto fill(Type value) -> void
+        [[nodiscard]] auto shape() const { return m_shape; }
+
+        [[nodiscard]] auto data() const { return m_data; }
+
+        auto fillRandomValues(std::pair<float, float> range) -> void
         {
-            std::ranges::fill(m_array, value);
+            std::ranges::generate(m_data, [&](){ return Utils::randomNumber(range); });
         }
-
-        constexpr auto print(std::string_view message = ""sv) const -> void
+    
+        auto print(std::string_view message = ""sv) const -> void
         {
-            if (!message.empty()) std::cout << message << "\n";
+            if (!message.empty()) std::cout << message << '\n';
 
-            for (auto i = 0u; i < Rows; ++i)
+            for (auto i = 0u; i < m_shape.first; ++i)
             {
                 std::cout << "\t";
-                for (auto j = 0u; j < Cols; ++j)
-                    std::cout << m_array[i * Cols + j] << " ";
+                for (auto j = 0u; j < m_shape.second; ++j)
+                    std::cout << m_data[i * m_shape.second + j] << " ";
                 
                 std::cout << "\n";
             }
         }
 
-        [[nodiscard]] constexpr auto data() const -> std::array<Type, Rows * Cols>
+        auto operator+(const Tensor& tensor) const
         {
-            return m_array;
+            std::vector<float> vector(m_shape.first * m_shape.second, 0.0f);
+            std::ranges::transform(m_data, tensor.data(), std::begin(vector), std::plus<float>());
+            return Tensor(vector);
         }
 
-        auto fillRandomValues(std::pair<Type, Type> range) -> void
+        auto operator*(const Tensor& tensor) const
         {
-            std::ranges::generate(m_array, [&](){ return Utils::randomNumber(range); });
+            std::vector<float> vector(m_shape.first * m_shape.second, 0.0f);
+            std::ranges::transform(m_data, tensor.data(), std::begin(vector), std::multiplies<float>());
+            return Tensor(vector);
         }
 
-        auto operator+(const Tensor<Type, Rows, Cols>& tensor) const
+        auto operator*(float scalar) const
         {
-            std::array<Type, Rows * Cols> array{};
-            std::ranges::transform(m_array, tensor.data(), array.begin(), std::plus<Type>());
-            return Tensor<Type, Rows, Cols>(array);
+            std::vector<float> vector = m_data;
+            std::ranges::for_each(vector, [=](auto& element){ element *= scalar; });
+            return Tensor(vector);
+        }
+        
+        auto operator-(float scalar) const
+        {
+            std::vector<float> vector = m_data;
+            std::ranges::for_each(vector, [=](auto& element){ element -= scalar; });
+            return Tensor(vector);
         }
 
     private:
-        std::array<Type, Rows * Cols> m_array{};
+        std::vector<float> m_data;
+        std::pair<unsigned, unsigned> m_shape;
     };
-
-    template <typename Type, 
-              std::size_t RowsA, std::size_t ColsA,
-              std::size_t RowsB, std::size_t ColsB>
-    [[nodiscard]] auto dot(const Tensor<Type, RowsA, ColsA>& a, 
-                           const Tensor<Type, RowsB, ColsB>& b)
-    {
-        static_assert(ColsA == RowsB);
-        std::array<Type, RowsA * ColsA> array{};
-        std::ranges::transform(a.data(), b.data(), array.begin(), std::multiplies<Type>());
-        return Tensor<Type, RowsA, ColsA>(array);
-    }
 }
 

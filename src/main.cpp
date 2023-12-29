@@ -1,20 +1,15 @@
-#include <iostream>
-
 #include "Tensor.hpp"
+#include "DenseLayer.hpp"
 
 auto main() -> int
 {
-    namespace MFL = Mayflower;
+    using namespace Mayflower;
 
-    auto st_tensor = MFL::Tensor<int, 1, 3>();
-    auto nd_tensor = MFL::Tensor<int, 3, 1>();
-    auto rd_tensor = MFL::Tensor<int, 1, 3>();
+    auto layer = DenseLayer(1, 3);
+    auto input = Tensor(std::vector{1.0f, 2.0f});
 
-    st_tensor.fill(2);
-    nd_tensor.fill(3);
-    rd_tensor.fill(5);
+    auto output = layer.forward(input);
 
-    auto res = st_tensor + rd_tensor;
-    res.print();
+    output.print();
 }
 

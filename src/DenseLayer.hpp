@@ -4,13 +4,21 @@
 
 namespace Mayflower
 {
+    class DenseLayer
+    {
+    public:
+        DenseLayer(unsigned numInputs, unsigned numNeurons);
 
-class DenseLayer
-{
-    DenseLayer(int num_inputs, int num_outputs);
+        auto forward(const Tensor& input) -> Tensor;
 
-    auto forward(const Tensor& input) -> Tensor;
-  
-};
+    private:
+        unsigned m_numInputs;
+        unsigned m_numNeurons;
 
+        Tensor m_forwardInput;
+
+        Tensor m_weights;
+        Tensor m_biases;
+    };
 }
+

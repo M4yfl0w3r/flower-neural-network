@@ -44,7 +44,7 @@ namespace Mayflower
             }
         }
 
-        constexpr auto data() const -> std::array<Type, Rows * Cols>
+        [[nodiscard]] constexpr auto data() const -> std::array<Type, Rows * Cols>
         {
             return m_array;
         }
@@ -54,6 +54,13 @@ namespace Mayflower
             std::ranges::generate(m_array, [&](){ return Utils::randomNumber(range); });
         }
 
+        auto operator+(const Tensor<Type, Rows, Cols>& tensor) const
+        {
+            std::array<Type, Rows * Cols> array{};
+            std::ranges::transform(m_array, tensor.data(), array.begin(), std::plus<Type>());
+            return Tensor<Type, Rows, Cols>(array);
+        }
+
     private:
         std::array<Type, Rows * Cols> m_array{};
     };
@@ -61,10 +68,11 @@ namespace Mayflower
     template <typename Type, 
               std::size_t RowsA, std::size_t ColsA,
               std::size_t RowsB, std::size_t ColsB>
-    auto dot(const Tensor<Type, RowsA, ColsA>& a, 
-             const Tensor<Type, RowsB, ColsB>& b)
+    [[nodiscard]] auto dot(const Tensor<Type, RowsA, ColsA>& a, 
+                           const Tensor<Type, RowsB, ColsB>& b)
     {
-        std::array<Type, RowsA * ColsA> array;
+        static_assert(ColsA == RowsB);
+        std::array<Type, RowsA * ColsA> array{};
         std::ranges::transform(a.data(), b.data(), array.begin(), std::multiplies<Type>());
         return Tensor<Type, RowsA, ColsA>(array);
     }

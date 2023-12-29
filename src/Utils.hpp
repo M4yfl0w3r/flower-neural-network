@@ -6,7 +6,7 @@ namespace Utils
 {
 
 template <typename Type>
-[[nodiscard]] auto randomNumber(std::pair<Type, Type> range) 
+[[nodiscard]] auto randomNumber(std::pair<Type, Type> range) -> Type
 {
     std::random_device device;
     std::mt19937 generator(device());

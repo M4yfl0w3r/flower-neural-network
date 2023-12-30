@@ -6,97 +6,48 @@
 #include <functional>
 #include <algorithm>
 #include <iostream>
-#include <vector>
+#include <cassert>
+#include <array>
 
 using namespace std::string_view_literals;
 
 namespace Mayflower
 {
-    class Tensor 
+    template <typename Type, unsigned Rows, unsigned Cols>
+    class Tensor
     {
     public:
-        Tensor() = default;
-
-        constexpr explicit Tensor(std::vector<float> data)
-            : m_data{data}
-        {
-            m_shape = {1, std::size(data)};
-        }
-
-        constexpr explicit Tensor(std::pair<unsigned, unsigned> shape)
-            : m_shape{shape}
-        {
-            m_data.resize(shape.first * shape.second);
-            fill(0.0f);
-        }
-
-        auto forEachElement(std::function<void(float&)> func)
-        {
-            for (auto& el : m_data)
-            {
-                func(el);
-            }
-        }
-        
-        constexpr auto fill(float value) -> void
-        {
-            std::ranges::fill(m_data, value);
-        }
-
-        [[nodiscard]] auto shape() const { return m_shape; }
-
-        [[nodiscard]] auto data() const { return m_data; }
-
-        auto fillRandomValues(std::pair<float, float> range) -> void
-        {
-            std::ranges::generate(m_data, [&](){ return Utils::randomNumber(range); });
-        }
-    
-        auto print(std::string_view message = ""sv) const -> void
-        {
-            if (!message.empty()) std::cout << message << '\n';
-
-            for (auto i = 0u; i < m_shape.first; ++i)
-            {
-                std::cout << "\t";
-                for (auto j = 0u; j < m_shape.second; ++j)
-                    std::cout << m_data[i * m_shape.second + j] << " ";
-                
-                std::cout << "\n";
-            }
-        }
-
-        auto operator+(const Tensor& tensor) const
-        {
-            std::vector<float> vector(m_shape.first * m_shape.second, 0.0f);
-            std::ranges::transform(m_data, tensor.data(), std::begin(vector), std::plus<float>());
-            return Tensor(vector);
-        }
-
-        auto operator*(const Tensor& tensor) const
-        {
-            std::vector<float> vector(m_shape.first * m_shape.second, 0.0f);
-            std::ranges::transform(m_data, tensor.data(), std::begin(vector), std::multiplies<float>());
-            return Tensor(vector);
-        }
-
-        auto operator*(float scalar) const
-        {
-            std::vector<float> vector = m_data;
-            std::ranges::for_each(vector, [=](auto& element){ element *= scalar; });
-            return Tensor(vector);
-        }
-        
-        auto operator-(float scalar) const
-        {
-            std::vector<float> vector = m_data;
-            std::ranges::for_each(vector, [=](auto& element){ element -= scalar; });
-            return Tensor(vector);
-        }
+        constexpr auto fill(Type value) -> void;
+        constexpr auto print() -> void;
+        auto fillRandomValues(std::pair<Type, Type> range) -> void;
 
     private:
-        std::vector<float> m_data;
-        std::pair<unsigned, unsigned> m_shape;
+        std::array<std::array<Type, Cols>, Rows> m_data;
     };
+    
+    template <typename Type, unsigned Rows, unsigned Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::fill(Type value) -> void
+    {
+        std::ranges::for_each(m_data, [=](auto& row) { std::ranges::fill(row, value); });
+    }
+
+    template <typename Type, unsigned Rows, unsigned Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::print() -> void
+    {
+        for (const auto& row : m_data)
+        {
+            for (const auto& el : row)
+                std::cout << el << ' ';
+            std::cout << '\n';
+        }
+    }
+    
+    template <typename Type, unsigned Rows, unsigned Cols>
+    auto Tensor<Type, Rows, Cols>::fillRandomValues(std::pair<Type, Type> range) -> void
+    {
+        std::ranges::for_each(m_data, [=](auto& row) { 
+            std::ranges::generate(row, [&](){ return Utils::randomNumber(range); } );
+        } );
+    }
 }
 

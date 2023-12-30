@@ -1,18 +1,21 @@
 #include "Tensor.hpp"
-#include "DenseLayer.hpp"
-#include "ActivationLayer.hpp"
 
 auto main() -> int
 {
     using namespace Mayflower;
 
-    auto layer = DenseLayer(1, 3);
-    auto relu = ReLU();
+    auto tensor = Tensor<float, 2, 3>();
+    tensor.fillRandomValues({-1.0f, 1.0f});
+    tensor.print();
 
-    auto input = Tensor(std::vector{1.0f, 2.0f});
+    // auto layer1 = DenseLayer(2, 3, Activation::ReLU);
+    // auto layer2 = DenseLayer(3, 4, Activation::Softmax);
 
-    auto o1 = layer.forward(input);
-    auto o2 = relu.forward(o1);
-
+    // auto input = Tensor(std::vector{1.0f, 2.0f}, {1, 2});
+    // auto o1 = layer1.forward(input);
+    // o1.print("1st DenseLayer output");
+    // auto o2 = layer2.forward(o1);
+    // o2.print("2nd DenseLayer output");
+    
 }
 

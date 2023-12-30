@@ -9,7 +9,8 @@ namespace Mayflower
     public:
         DenseLayer(unsigned numInputs, unsigned numNeurons);
 
-        auto forward(const Tensor& input) -> Tensor;
+        auto forward(const Tensor&) -> Tensor;
+        auto backward(const Tensor&) -> Tensor;
 
     private:
         unsigned m_numInputs;

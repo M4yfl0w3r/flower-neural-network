@@ -3,6 +3,7 @@
 #include "Utils.hpp"
 
 #include <string_view>
+#include <functional>
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -27,6 +28,14 @@ namespace Mayflower
         {
             m_data.resize(shape.first * shape.second);
             fill(0.0f);
+        }
+
+        auto forEachElement(std::function<void(float&)> func)
+        {
+            for (auto& el : m_data)
+            {
+                func(el);
+            }
         }
         
         constexpr auto fill(float value) -> void

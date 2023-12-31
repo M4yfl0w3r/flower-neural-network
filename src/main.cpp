@@ -4,9 +4,14 @@ auto main() -> int
 {
     using namespace Mayflower;
 
-    auto tensor = Tensor<float, 2, 3>();
-    tensor.fillRandomValues({-1.0f, 1.0f});
-    tensor.print();
+    auto st = Tensor<float, 2, 3>();
+    auto nd = Tensor<float, 2, 3>();
+
+    st.fill(2.0f);
+    nd.fill(3.0f);
+
+    auto res = st + nd;
+    res.print();
 
     // auto layer1 = DenseLayer(2, 3, Activation::ReLU);
     // auto layer2 = DenseLayer(3, 4, Activation::Softmax);

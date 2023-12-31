@@ -15,9 +15,10 @@ namespace Mayflower
         constexpr Tensor() = default; 
         constexpr Tensor(std::array<std::array<Type, Cols>, Rows> data);
         
-        constexpr auto at(unsigned x, unsigned y) const -> Type;
+        [[nodiscard]] constexpr auto at(unsigned x, unsigned y) const -> Type;
+
         constexpr auto fill(Type value) -> void;
-        constexpr auto print() -> void;
+        constexpr auto print() const -> void;
 
         auto fillRandomValues(std::pair<Type, Type> range) -> void;
 
@@ -45,7 +46,7 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned Rows, unsigned Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::print() -> void
+    constexpr auto Tensor<Type, Rows, Cols>::print() const -> void
     {
         for (const auto& row : m_data)
         {
@@ -64,7 +65,7 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
-    constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
+    [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
     {
         if constexpr (RowsA == RowsB && ColsA == ColsB)
         {
@@ -81,6 +82,28 @@ namespace Mayflower
 
             return Tensor<Type, rows, cols>(result);
         }
+    }
+
+    template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
+    [[nodiscard]] constexpr auto operator*(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
+    {
+        static_assert(ColsA == RowsB);
+
+        std::array<std::array<Type, ColsB>, RowsA> result{};
+
+        // TODO: Strassen algorithm
+        for (auto i = 0u; i < RowsA; ++i)
+        {
+            for (auto j = 0u; j < ColsB; ++j)
+            {
+                Type sum{};
+                for (auto k = 0u; k < ColsA; ++k)
+                    sum += one.at(i, k) * other.at(k, j);
+                result.at(i).at(j) = sum;
+            }
+        }
+        
+        return Tensor<Type, RowsA, ColsB>(result);
     }
 }
 

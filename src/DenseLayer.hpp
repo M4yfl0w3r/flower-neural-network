@@ -10,6 +10,10 @@ namespace Mayflower
         Softmax
     };
 
+    // ??? Prolly shoulda unify
+    // Input = Inputs, 1
+    // Bias = 1, Neurons
+
     template <typename Type, unsigned Inputs, unsigned Neurons>
     class DenseLayer
     {
@@ -19,12 +23,15 @@ namespace Mayflower
         constexpr auto printWeights() const;
         constexpr auto printBiases() const;
 
-        [[nodiscard]] constexpr auto forward(const Tensor<Type, Inputs, Neurons>&) const;
+        [[nodiscard]] constexpr auto forward(const Tensor<Type, 1, Inputs>&);
 
     private:
         const unsigned m_numInputs;
         const unsigned m_numNeurons;
         const Activation m_activation;
+
+        Tensor<Type, 1, Inputs> m_forwardInput;
+        Tensor<Type, 1, Neurons> m_forwardOutput;
 
         Tensor<Type, Inputs, Neurons> m_weights;
         Tensor<Type, 1, Neurons> m_biases;
@@ -54,10 +61,11 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned Inputs, unsigned Neurons>
-    constexpr auto DenseLayer<Type, Inputs, Neurons>::forward(const Tensor<Type, Inputs, Neurons>&) const
+    constexpr auto DenseLayer<Type, Inputs, Neurons>::forward(const Tensor<Type, 1, Inputs>& input)
     {
-        
-
+        m_forwardInput = input;
+        m_forwardOutput = (m_forwardInput * m_weights) + m_biases;
+        return m_forwardOutput;
     }
 
 }

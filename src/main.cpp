@@ -10,13 +10,16 @@ auto main() -> int
     auto input = Tensor<float, 1, 2>();
     input.fill(2.0f);
 
-    st.printBiases();
+    auto o1 = st.forward(input);
+   
+    std::cout << "Input = \n";
+    input.print();
+
+    std::cout << "Weights = \n";
     st.printWeights();
 
-    // auto o1 = layer1.forward(input);
-    // o1.print("1st DenseLayer output");
-    // auto o2 = layer2.forward(o1);
-    // o2.print("2nd DenseLayer output");
+    std::cout << "1st DenseLayer output\n";
+    o1.print();
     
 }
 

@@ -14,11 +14,19 @@ namespace Mayflower
     public:
         constexpr Tensor() = default; 
         constexpr Tensor(std::array<std::array<Type, Cols>, Rows> data);
-        
+
+        Tensor(const Tensor<Type, Rows, Cols>&);
+        decltype(auto) operator=(const Tensor<Type, Rows, Cols>&);
+
+        Tensor(Tensor<Type, Rows, Cols>&&) noexcept;
+        decltype(auto) operator=(Tensor<Type, Rows, Cols>&&) noexcept;
+
+        [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
         [[nodiscard]] constexpr auto at(unsigned x, unsigned y) const -> Type;
 
         constexpr auto fill(Type value) -> void;
         constexpr auto print() const -> void;
+        constexpr auto printShape() const -> void;
 
         auto fillRandomValues(std::pair<Type, Type> range) -> void;
 
@@ -31,6 +39,42 @@ namespace Mayflower
     constexpr Tensor<Type, Rows, Cols>::Tensor(std::array<std::array<Type, Cols>, Rows> data)
         : m_data{data}
     {
+    }
+    
+    template <typename Type, unsigned Rows, unsigned Cols>
+    Tensor<Type, Rows, Cols>::Tensor(const Tensor<Type, Rows, Cols>& other)
+        : m_data{other.data()}
+    {
+    }
+    
+    template <typename Type, unsigned Rows, unsigned Cols>
+    decltype(auto) Tensor<Type, Rows, Cols>::operator=(const Tensor<Type, Rows, Cols>& other) 
+    {
+        if (this != &other)
+            m_data = other.data();
+        
+        return *this;
+    }
+
+    template <typename Type, unsigned Rows, unsigned Cols>
+    Tensor<Type, Rows, Cols>::Tensor(Tensor<Type, Rows, Cols>&& other) noexcept
+        : m_data{std::move(other.data())}
+    {
+    }
+
+    template <typename Type, unsigned Rows, unsigned Cols>
+    decltype(auto) Tensor<Type, Rows, Cols>::operator=(Tensor<Type, Rows, Cols>&& other) noexcept
+    {
+        if (this != &other)
+            m_data = std::move(other.data());
+        
+        return *this;
+    }
+    
+    template <typename Type, unsigned Rows, unsigned Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::data() const -> std::array<std::array<Type, Cols>, Rows>
+    {
+        return m_data;
     }
     
     template <typename Type, unsigned Rows, unsigned Cols>
@@ -54,6 +98,12 @@ namespace Mayflower
                 std::cout << el << ' ';
             std::cout << '\n';
         }
+    }
+    
+    template <typename Type, unsigned Rows, unsigned Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::printShape() const -> void
+    {
+        std::cout << "Shape = (" << Rows << ", " << Cols << ")\n";
     }
     
     template <typename Type, unsigned Rows, unsigned Cols>

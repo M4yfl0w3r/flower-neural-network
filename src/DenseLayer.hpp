@@ -10,10 +10,6 @@ namespace Mayflower
         Softmax
     };
 
-    // ??? Prolly shoulda unify
-    // Input = Inputs, 1
-    // Bias = 1, Neurons
-
     template <typename Type, unsigned Inputs, unsigned Neurons>
     class DenseLayer
     {
@@ -65,6 +61,19 @@ namespace Mayflower
     {
         m_forwardInput = input;
         m_forwardOutput = (m_forwardInput * m_weights) + m_biases;
+
+        switch (m_activation)
+        {
+            case Activation::ReLU:
+                m_forwardOutput.forEachElement([](auto& el){ el = std::max(Type{}, el); });
+            
+            case Activation::Softmax:
+            {
+
+            }
+
+        }
+
         return m_forwardOutput;
     }
 

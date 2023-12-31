@@ -2,6 +2,7 @@
 
 #include "Utils.hpp"
 
+#include <functional>
 #include <algorithm>
 #include <cassert>
 #include <array>
@@ -20,6 +21,8 @@ namespace Mayflower
 
         Tensor(Tensor<Type, Rows, Cols>&&) noexcept;
         decltype(auto) operator=(Tensor<Type, Rows, Cols>&&) noexcept;
+
+        auto forEachElement(std::function<void(Type&)>);
 
         [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
         [[nodiscard]] constexpr auto at(unsigned x, unsigned y) const -> Type;
@@ -69,6 +72,16 @@ namespace Mayflower
             m_data = std::move(other.data());
         
         return *this;
+    }
+
+    template <typename Type, unsigned Rows, unsigned Cols>
+    auto Tensor<Type, Rows, Cols>::forEachElement(std::function<void(Type&)> func)
+    {
+        for (auto& row : m_data) 
+        {
+            for (auto& element : row)
+                func(element);
+        }
     }
     
     template <typename Type, unsigned Rows, unsigned Cols>

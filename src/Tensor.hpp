@@ -25,7 +25,7 @@ namespace Mayflower
 
         auto forEachElement(std::function<void(Type&)>);
 
-        [[nodiscard]] constexpr auto sum() const -> Type;
+        [[nodiscard]] constexpr auto sum() const -> Tensor<Type, 1, 1>;
         [[nodiscard]] constexpr auto exp() const -> Tensor<Type, Rows, Cols>;
         [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
         [[nodiscard]] constexpr auto at(unsigned x, unsigned y) const -> Type;
@@ -100,12 +100,12 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned Rows, unsigned Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::sum() const -> Type
+    constexpr auto Tensor<Type, Rows, Cols>::sum() const -> Tensor<Type, 1, 1>
     {
         auto result = Type{};
         for (const auto& row : m_data)
             result += std::accumulate(std::begin(row), std::end(row), Type{});
-        return result;
+        return Tensor<Type, 1, 1>(std::array<std::array<Type, 1>, 1>({result}));
     }
 
     template <typename Type, unsigned Rows, unsigned Cols>
@@ -189,10 +189,15 @@ namespace Mayflower
         return Tensor<Type, RowsA, ColsB>(result);
     }
 
-    // template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
-    // [[nodiscard]] constexpr auto operator/(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
-    // {
-    //
-    // }
+    template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
+    [[nodiscard]] constexpr auto operator/(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
+    {
+        if (RowsB == 1 && ColsB == 1)
+        {
+            auto result = one;
+            result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });
+            return result;
+        }
+    }
 }
 

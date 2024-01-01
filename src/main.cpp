@@ -11,6 +11,8 @@ auto main() -> int
     input.fill(2.0f);
 
     auto o1 = st.forward(input);
+    
+    std::cout << "\nDenseLayer output\n";
     o1.print();
    
     // std::cout << "Input = \n";

@@ -71,6 +71,7 @@ namespace Mayflower
             case Activation::Softmax:
                 const auto expValues = m_forwardOutput.exp();
                 const auto expValuesSum = expValues.sum();
+                m_forwardOutput = expValues / expValuesSum;
                 break;
         }
 

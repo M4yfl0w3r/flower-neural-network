@@ -66,12 +66,13 @@ namespace Mayflower
         {
             case Activation::ReLU:
                 m_forwardOutput.forEachElement([](auto& el){ el = std::max(Type{}, el); });
+                break;
             
             case Activation::Softmax:
-            {
-
-            }
-
+                const auto expValues = m_forwardOutput.exp();
+                m_forwardOutput.print();
+                expValues.print();
+                break;
         }
 
         return m_forwardOutput;

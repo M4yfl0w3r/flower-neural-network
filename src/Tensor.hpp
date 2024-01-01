@@ -5,6 +5,7 @@
 #include <functional>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <array>
 
 namespace Mayflower
@@ -24,6 +25,7 @@ namespace Mayflower
 
         auto forEachElement(std::function<void(Type&)>);
 
+        [[nodiscard]] constexpr auto exp() -> Tensor<Type, Rows, Cols>;
         [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
         [[nodiscard]] constexpr auto at(unsigned x, unsigned y) const -> Type;
 
@@ -95,6 +97,14 @@ namespace Mayflower
     {
         return m_data.at(x).at(y);
     }
+
+    template <typename Type, unsigned Rows, unsigned Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::exp() -> Tensor<Type, Rows, Cols> 
+    {
+        auto result = Tensor<Type, Rows, Cols>(m_data);
+        result.forEachElement([](auto& el){ el = std::exp(el); });
+        return result;
+    }
     
     template <typename Type, unsigned Rows, unsigned Cols>
     constexpr auto Tensor<Type, Rows, Cols>::fill(Type value) -> void
@@ -128,7 +138,7 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
-    [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
+    [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one,  const Tensor<Type, RowsB, ColsB>& other)
     {
         if constexpr (RowsA == RowsB && ColsA == ColsB)
         {

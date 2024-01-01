@@ -23,13 +23,14 @@ namespace Mayflower
         Tensor(Tensor<Type, Rows, Cols>&&) noexcept;
         decltype(auto) operator=(Tensor<Type, Rows, Cols>&&) noexcept;
 
-        auto forEachElement(std::function<void(Type&)>);
+        constexpr auto forEachElement(std::function<void(Type&)>);
 
         [[nodiscard]] constexpr auto sum() const -> Tensor<Type, 1, 1>;
         [[nodiscard]] constexpr auto exp() const -> Tensor<Type, Rows, Cols>;
         [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
         [[nodiscard]] constexpr auto at(unsigned x, unsigned y) const -> Type;
 
+        constexpr auto negative() -> void;
         constexpr auto fill(Type value) -> void;
         constexpr auto print() const -> void;
         constexpr auto printShape() const -> void;
@@ -78,7 +79,7 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned Rows, unsigned Cols>
-    auto Tensor<Type, Rows, Cols>::forEachElement(std::function<void(Type&)> func)
+    constexpr auto Tensor<Type, Rows, Cols>::forEachElement(std::function<void(Type&)> func)
     {
         for (auto& row : m_data) 
         {
@@ -115,6 +116,12 @@ namespace Mayflower
         result.forEachElement([](auto& el){ el = std::exp(el); });
         return result;
     }
+
+    template <typename Type, unsigned Rows, unsigned Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::negative() -> void
+    {
+        this->forEachElement([](auto& el){ el = -el;});
+    }
     
     template <typename Type, unsigned Rows, unsigned Cols>
     constexpr auto Tensor<Type, Rows, Cols>::fill(Type value) -> void
@@ -142,13 +149,14 @@ namespace Mayflower
     template <typename Type, unsigned Rows, unsigned Cols>
     auto Tensor<Type, Rows, Cols>::fillRandomValues(std::pair<Type, Type> range) -> void
     {
-        std::ranges::for_each(m_data, [=](auto& row) { 
+        std::ranges::for_each(m_data, [=](auto& row){ 
             std::ranges::generate(row, [&](){ return Utils::randomNumber(range); } );
-        } );
+        });
     }
 
     template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
-    [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one,  const Tensor<Type, RowsB, ColsB>& other)
+    [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one,
+                                           const Tensor<Type, RowsB, ColsB>& other)
     {
         if constexpr (RowsA == RowsB && ColsA == ColsB)
         {
@@ -168,10 +176,10 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
-    [[nodiscard]] constexpr auto operator*(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
+    [[nodiscard]] constexpr auto operator*(const Tensor<Type, RowsA, ColsA>& one,
+                                           const Tensor<Type, RowsB, ColsB>& other)
     {
         static_assert(ColsA == RowsB);
-
         std::array<std::array<Type, ColsB>, RowsA> result{};
 
         // TODO: Strassen algorithm
@@ -190,7 +198,8 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
-    [[nodiscard]] constexpr auto operator/(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
+    [[nodiscard]] constexpr auto operator/(const Tensor<Type, RowsA, ColsA>& one, 
+                                           const Tensor<Type, RowsB, ColsB>& other)
     {
         if (RowsB == 1 && ColsB == 1)
         {

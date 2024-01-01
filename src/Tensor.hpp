@@ -25,7 +25,8 @@ namespace Mayflower
 
         auto forEachElement(std::function<void(Type&)>);
 
-        [[nodiscard]] constexpr auto exp() -> Tensor<Type, Rows, Cols>;
+        [[nodiscard]] constexpr auto sum() const -> Type;
+        [[nodiscard]] constexpr auto exp() const -> Tensor<Type, Rows, Cols>;
         [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
         [[nodiscard]] constexpr auto at(unsigned x, unsigned y) const -> Type;
 
@@ -99,7 +100,16 @@ namespace Mayflower
     }
 
     template <typename Type, unsigned Rows, unsigned Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::exp() -> Tensor<Type, Rows, Cols> 
+    constexpr auto Tensor<Type, Rows, Cols>::sum() const -> Type
+    {
+        auto result = Type{};
+        for (const auto& row : m_data)
+            result += std::accumulate(std::begin(row), std::end(row), Type{});
+        return result;
+    }
+
+    template <typename Type, unsigned Rows, unsigned Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::exp() const -> Tensor<Type, Rows, Cols> 
     {
         auto result = Tensor<Type, Rows, Cols>(m_data);
         result.forEachElement([](auto& el){ el = std::exp(el); });
@@ -178,5 +188,11 @@ namespace Mayflower
         
         return Tensor<Type, RowsA, ColsB>(result);
     }
+
+    // template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
+    // [[nodiscard]] constexpr auto operator/(const Tensor<Type, RowsA, ColsA>& one, const Tensor<Type, RowsB, ColsB>& other)
+    // {
+    //
+    // }
 }
 

@@ -33,8 +33,7 @@ namespace Mayflower
         // TODO: Change to std::views::zip when available
         for (auto i = 0u; const auto& row : input.data())        
         {
-            maxIndices.at(i) = static_cast<std::size_t>(std::ranges::distance(std::begin(row), std::ranges::max_element(row)));
-            ++i;
+            maxIndices.at(i++) = static_cast<std::size_t>(std::ranges::distance(std::begin(row), std::ranges::max_element(row)));
         }
 
         auto correctPredictions = 0u;

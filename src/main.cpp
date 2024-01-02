@@ -1,3 +1,4 @@
+#include "Utils.hpp"
 #include "Loss.hpp"
 #include "Tensor.hpp"
 #include "DenseLayer.hpp"
@@ -17,11 +18,14 @@ auto main() -> int
 
     auto o1 = st.forward(input);
     auto o2 = nd.forward(o1);
+
     const auto lossValue = loss.forward(o2, labels);
+    const auto accValue = accuracy<float, 1u, 3u>(o2, labels);
 
     std::cout << "\nForward pass output\n";
     o2.print();
 
     std::cout << "\nLoss : " << lossValue << '\n';
+    std::cout << "\nAccuracy : " << accValue * 100 << "%\n";
 }
 

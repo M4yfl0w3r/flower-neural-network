@@ -1,11 +1,16 @@
 #include "Utils.hpp"
 #include "Loss.hpp"
 #include "Tensor.hpp"
+#include "Dataset.hpp"
 #include "DenseLayer.hpp"
 
 auto main() -> int
 {
     using namespace Mayflower;
+
+    const auto data = Dataset(Datasets::Iris, 
+                              "/home/hope/Repositories/flower-neural-network/assets/iris/iris.data",
+                              100u);
 
     auto st = DenseLayer<float, 2u, 3u>(Activation::ReLU);
     auto nd = DenseLayer<float, 3u, 3u>(Activation::Softmax);

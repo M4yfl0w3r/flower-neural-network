@@ -32,9 +32,7 @@ namespace Mayflower
         
     private:
         Tensor<Type, Rows, 1> targetClasses;
-
         Tensor<Type, Rows, Cols> m_forwardInput;
-        Tensor<Type, Rows, Cols> m_forwardOutput;
     };
 
 
@@ -43,9 +41,6 @@ namespace Mayflower
                                                                       const Tensor<std::size_t, Rows, 1u>& labels)
     {
         m_forwardInput = input;
-        m_forwardOutput = input;
-
-        // auto loss = Type{};
 
         // TODO: Change to std::views::zip function when C++23 available
         auto confidences = Tensor<Type, Rows, 1u>{};
@@ -56,19 +51,12 @@ namespace Mayflower
             confidences.fillAt(labelIndex, 0u, row.at(labels.at(labelIndex, 0u)));
             ++labelIndex;
         }
-    
-        std::cout << "\nConfidences\n";
-        confidences.print();
-
-        std::cout << "\nLog confidences\n";
-        confidences.log();
-        confidences.negative();
-        confidences.print();
 
         // Clip to prevent log(0.0)
-        m_forwardOutput.clip(std::numeric_limits<Type>::min(), 1 - std::numeric_limits<Type>::min());
-
-        return m_forwardInput;
+        confidences.clip(std::numeric_limits<Type>::min(), 1 - std::numeric_limits<Type>::min());
+        confidences.log();
+        confidences.negative();
+        return confidences.mean();
     }
 }
 

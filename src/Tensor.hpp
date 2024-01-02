@@ -28,6 +28,7 @@ namespace Mayflower
 
         constexpr auto forEachElement(std::function<void(Type&)>);
 
+        [[nodiscard]] constexpr auto mean() -> Type;
         [[nodiscard]] constexpr auto sum() const -> Tensor<Type, 1, 1>;
         [[nodiscard]] constexpr auto exp() const -> Tensor<Type, Rows, Cols>;
         [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
@@ -104,6 +105,14 @@ namespace Mayflower
     constexpr auto Tensor<Type, Rows, Cols>::at(std::size_t x, std::size_t y) const -> Type
     {
         return m_data.at(x).at(y);
+    }
+    
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::mean() -> Type
+    {
+        auto sum = Type{};
+        this->forEachElement([&sum](auto el){ sum += el; });
+        return sum / (Rows * Cols);
     }
 
     template <typename Type, std::size_t Rows, std::size_t Cols>

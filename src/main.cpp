@@ -17,12 +17,11 @@ auto main() -> int
 
     auto o1 = st.forward(input);
     auto o2 = nd.forward(o1);
-    auto o3 = loss.forward(o2, labels);
+    const auto lossValue = loss.forward(o2, labels);
 
     std::cout << "\nForward pass output\n";
     o2.print();
 
-    std::cout << "\nLoss output\n";
-    o3.print();
+    std::cout << "\nLoss : " << lossValue << '\n';
 }
 

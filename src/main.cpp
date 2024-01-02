@@ -1,3 +1,4 @@
+#include "Loss.hpp"
 #include "Tensor.hpp"
 #include "DenseLayer.hpp"
 
@@ -5,17 +6,23 @@ auto main() -> int
 {
     using namespace Mayflower;
 
-    auto st = DenseLayer<float, 2, 3>(Activation::ReLU);
-    auto nd = DenseLayer<float, 3, 3>(Activation::Softmax);
+    auto st = DenseLayer<float, 2u, 3u>(Activation::ReLU);
+    auto nd = DenseLayer<float, 3u, 3u>(Activation::Softmax);
+    auto loss = CategoricalCrossEntropy<float, 1u, 3u>();
 
-    auto input = Tensor<float, 1, 2>();
+    auto input = Tensor<float, 1u, 2u>();
+    auto labels = Tensor<std::size_t, 1u, 1u>(std::array<std::array<std::size_t, 1u>, 1u>({{0u}}));
+
     input.fill(2.0f);
 
     auto o1 = st.forward(input);
     auto o2 = nd.forward(o1);
-    
+    auto o3 = loss.forward(o2, labels);
+
     std::cout << "\nForward pass output\n";
     o2.print();
-   
+
+    std::cout << "\nLoss output\n";
+    o3.print();
 }
 

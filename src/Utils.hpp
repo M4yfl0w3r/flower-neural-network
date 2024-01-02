@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Tensor.hpp"
+
 #include <random>
 #include <iostream>
 
@@ -14,3 +16,4 @@ namespace Utils
         return distribution(generator);
     }
 }
+

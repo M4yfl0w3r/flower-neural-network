@@ -4,13 +4,16 @@
 
 #include <functional>
 #include <algorithm>
+#include <iostream>
 #include <cassert>
+#include <numeric>
+#include <ranges>
 #include <cmath>
 #include <array>
 
 namespace Mayflower
 {
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     class Tensor
     {
     public:
@@ -28,8 +31,11 @@ namespace Mayflower
         [[nodiscard]] constexpr auto sum() const -> Tensor<Type, 1, 1>;
         [[nodiscard]] constexpr auto exp() const -> Tensor<Type, Rows, Cols>;
         [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
-        [[nodiscard]] constexpr auto at(unsigned x, unsigned y) const -> Type;
+        [[nodiscard]] constexpr auto at(std::size_t x, std::size_t y) const -> Type;
 
+        constexpr auto log() -> void;
+        constexpr auto clip(Type min, Type max) -> void;
+        constexpr auto fillAt(std::size_t i, std::size_t j, Type value) -> void;
         constexpr auto negative() -> void;
         constexpr auto fill(Type value) -> void;
         constexpr auto print() const -> void;
@@ -42,19 +48,19 @@ namespace Mayflower
     };
 
 
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     constexpr Tensor<Type, Rows, Cols>::Tensor(std::array<std::array<Type, Cols>, Rows> data)
         : m_data{data}
     {
     }
     
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     Tensor<Type, Rows, Cols>::Tensor(const Tensor<Type, Rows, Cols>& other)
         : m_data{other.data()}
     {
     }
     
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     decltype(auto) Tensor<Type, Rows, Cols>::operator=(const Tensor<Type, Rows, Cols>& other) 
     {
         if (this != &other)
@@ -63,13 +69,13 @@ namespace Mayflower
         return *this;
     }
 
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     Tensor<Type, Rows, Cols>::Tensor(Tensor<Type, Rows, Cols>&& other) noexcept
         : m_data{std::move(other.data())}
     {
     }
 
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     decltype(auto) Tensor<Type, Rows, Cols>::operator=(Tensor<Type, Rows, Cols>&& other) noexcept
     {
         if (this != &other)
@@ -78,7 +84,7 @@ namespace Mayflower
         return *this;
     }
 
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     constexpr auto Tensor<Type, Rows, Cols>::forEachElement(std::function<void(Type&)> func)
     {
         for (auto& row : m_data) 
@@ -88,28 +94,28 @@ namespace Mayflower
         }
     }
     
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     constexpr auto Tensor<Type, Rows, Cols>::data() const -> std::array<std::array<Type, Cols>, Rows>
     {
         return m_data;
     }
     
-    template <typename Type, unsigned Rows, unsigned Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::at(unsigned x, unsigned y) const -> Type
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::at(std::size_t x, std::size_t y) const -> Type
     {
         return m_data.at(x).at(y);
     }
 
-    template <typename Type, unsigned Rows, unsigned Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::sum() const -> Tensor<Type, 1, 1>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::sum() const -> Tensor<Type, 1u, 1u>
     {
         auto result = Type{};
         for (const auto& row : m_data)
             result += std::accumulate(std::begin(row), std::end(row), Type{});
-        return Tensor<Type, 1, 1>(std::array<std::array<Type, 1>, 1>({result}));
+        return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({result}));
     }
 
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     constexpr auto Tensor<Type, Rows, Cols>::exp() const -> Tensor<Type, Rows, Cols> 
     {
         auto result = Tensor<Type, Rows, Cols>(m_data);
@@ -117,19 +123,37 @@ namespace Mayflower
         return result;
     }
 
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::log() -> void
+    {
+        this->forEachElement([=](auto& el){ el = std::log(el); });
+    }
+
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::clip(Type min, Type max) -> void
+    {
+        this->forEachElement([=](auto& el){ el = std::clamp(el, min, max); });
+    }
+
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    constexpr auto Tensor<Type, Rows, Cols>::fillAt(std::size_t i, std::size_t j, Type value) -> void
+    {
+        m_data.at(i).at(j) = value;
+    }
+
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     constexpr auto Tensor<Type, Rows, Cols>::negative() -> void
     {
         this->forEachElement([](auto& el){ el = -el;});
     }
     
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     constexpr auto Tensor<Type, Rows, Cols>::fill(Type value) -> void
     {
         std::ranges::for_each(m_data, [=](auto& row) { std::ranges::fill(row, value); });
     }
 
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     constexpr auto Tensor<Type, Rows, Cols>::print() const -> void
     {
         for (const auto& row : m_data)
@@ -140,13 +164,13 @@ namespace Mayflower
         }
     }
     
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     constexpr auto Tensor<Type, Rows, Cols>::printShape() const -> void
     {
         std::cout << "Shape = (" << Rows << ", " << Cols << ")\n";
     }
     
-    template <typename Type, unsigned Rows, unsigned Cols>
+    template <typename Type, std::size_t Rows, std::size_t Cols>
     auto Tensor<Type, Rows, Cols>::fillRandomValues(std::pair<Type, Type> range) -> void
     {
         std::ranges::for_each(m_data, [=](auto& row){ 
@@ -154,7 +178,7 @@ namespace Mayflower
         });
     }
 
-    template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
+    template <typename Type, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
     [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one,
                                            const Tensor<Type, RowsB, ColsB>& other)
     {
@@ -175,7 +199,7 @@ namespace Mayflower
         }
     }
 
-    template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
+    template <typename Type, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
     [[nodiscard]] constexpr auto operator*(const Tensor<Type, RowsA, ColsA>& one,
                                            const Tensor<Type, RowsB, ColsB>& other)
     {
@@ -197,7 +221,7 @@ namespace Mayflower
         return Tensor<Type, RowsA, ColsB>(result);
     }
 
-    template <typename Type, unsigned RowsA, unsigned ColsA, unsigned RowsB, unsigned ColsB>
+    template <typename Type, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
     [[nodiscard]] constexpr auto operator/(const Tensor<Type, RowsA, ColsA>& one, 
                                            const Tensor<Type, RowsB, ColsB>& other)
     {

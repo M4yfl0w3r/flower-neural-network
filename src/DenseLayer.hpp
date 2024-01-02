@@ -10,7 +10,7 @@ namespace Mayflower
         Softmax
     };
 
-    template <typename Type, unsigned Inputs, unsigned Neurons>
+    template <typename Type, std::size_t Inputs, std::size_t Neurons>
     class DenseLayer
     {
     public:
@@ -22,8 +22,8 @@ namespace Mayflower
         [[nodiscard]] constexpr auto forward(const Tensor<Type, 1, Inputs>&);
 
     private:
-        const unsigned m_numInputs;
-        const unsigned m_numNeurons;
+        const std::size_t m_numInputs;
+        const std::size_t m_numNeurons;
         const Activation m_activation;
 
         Tensor<Type, 1, Inputs> m_forwardInput;
@@ -33,7 +33,7 @@ namespace Mayflower
         Tensor<Type, 1, Neurons> m_biases;
     };
 
-    template <typename Type, unsigned Inputs, unsigned Neurons>
+    template <typename Type, std::size_t Inputs, std::size_t Neurons>
     constexpr DenseLayer<Type, Inputs, Neurons>::DenseLayer(Activation activation)
         : m_numInputs{Inputs}, m_numNeurons{Neurons}, m_activation{activation}
     {
@@ -44,19 +44,19 @@ namespace Mayflower
         m_biases.fillRandomValues( {0.0f, 1.0f} );
     }
         
-    template <typename Type, unsigned Inputs, unsigned Neurons>
+    template <typename Type, std::size_t Inputs, std::size_t Neurons>
     constexpr auto DenseLayer<Type, Inputs, Neurons>::printWeights() const
     {
         m_weights.print();
     }
     
-    template <typename Type, unsigned Inputs, unsigned Neurons>
+    template <typename Type, std::size_t Inputs, std::size_t Neurons>
     constexpr auto DenseLayer<Type, Inputs, Neurons>::printBiases() const
     {
         m_biases.print();
     }
 
-    template <typename Type, unsigned Inputs, unsigned Neurons>
+    template <typename Type, std::size_t Inputs, std::size_t Neurons>
     constexpr auto DenseLayer<Type, Inputs, Neurons>::forward(const Tensor<Type, 1, Inputs>& input)
     {
         m_forwardInput = input;

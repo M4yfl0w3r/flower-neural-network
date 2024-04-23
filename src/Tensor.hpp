@@ -2,13 +2,12 @@
 
 #include "Utils.hpp"
 
+#include <string_view>
 #include <functional>
 #include <algorithm>
 #include <iostream>
 #include <utility>
-#include <cassert>
 #include <numeric>
-#include <ranges>
 #include <cmath>
 #include <array>
 
@@ -39,7 +38,7 @@ namespace Mayflower
         constexpr auto fillAt(std::size_t i, std::size_t j, Type value) -> void;
         constexpr auto negative() -> void;
         constexpr auto fill(Type value) -> void;
-        constexpr auto print(std::string_view message) const -> void;
+        constexpr auto print() const -> void;
         constexpr auto printShape() const -> void;
 
         auto fillRandomValues(std::pair<Type, Type> range) -> void;
@@ -149,10 +148,8 @@ namespace Mayflower
     }
 
     template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::print(std::string_view message) const -> void
+    constexpr auto Tensor<Type, Rows, Cols>::print() const -> void
     {
-        std::cout << message.data() << ": ";
-
         for (const auto& row : m_data)
         {
             for (const auto& el : row)
@@ -175,7 +172,9 @@ namespace Mayflower
         });
     }
 
-    template <typename Type, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
+    template <typename Type, 
+              std::size_t RowsA, std::size_t ColsA, 
+              std::size_t RowsB, std::size_t ColsB>
     [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one,
                                            const Tensor<Type, RowsB, ColsB>& other)
     {
@@ -196,7 +195,9 @@ namespace Mayflower
         }
     }
 
-    template <typename Type, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
+    template <typename Type, 
+              std::size_t RowsA, std::size_t ColsA, 
+              std::size_t RowsB, std::size_t ColsB>
     [[nodiscard]] constexpr auto operator*(const Tensor<Type, RowsA, ColsA>& one,
                                            const Tensor<Type, RowsB, ColsB>& other)
     {

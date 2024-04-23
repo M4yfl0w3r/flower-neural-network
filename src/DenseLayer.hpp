@@ -16,9 +16,6 @@ namespace Mayflower
     public:
         constexpr DenseLayer(Activation activation);
 
-        constexpr auto printWeights() const;
-        constexpr auto printBiases() const;
-
         [[nodiscard]] constexpr auto forward(const Tensor<Type, 1, Inputs>&);
 
     private:
@@ -38,22 +35,10 @@ namespace Mayflower
         : m_numInputs{Inputs}, m_numNeurons{Neurons}, m_activation{activation}
     {
         m_weights = Tensor<Type, Inputs, Neurons>();
-        m_weights.fillRandomValues( {0.0f, 1.0f} );
+        m_weights.fillRandomValues( { 0.0f, 1.0f } );
 
-        m_biases= Tensor<Type, 1, Neurons>();
-        m_biases.fillRandomValues( {0.0f, 1.0f} );
-    }
-        
-    template <typename Type, std::size_t Inputs, std::size_t Neurons>
-    constexpr auto DenseLayer<Type, Inputs, Neurons>::printWeights() const
-    {
-        m_weights.print();
-    }
-    
-    template <typename Type, std::size_t Inputs, std::size_t Neurons>
-    constexpr auto DenseLayer<Type, Inputs, Neurons>::printBiases() const
-    {
-        m_biases.print();
+        m_biases = Tensor<Type, 1, Neurons>();
+        m_biases.fillRandomValues( { 0.0f, 1.0f } );
     }
 
     template <typename Type, std::size_t Inputs, std::size_t Neurons>
@@ -69,7 +54,7 @@ namespace Mayflower
                 break;
             
             case Activation::Softmax:
-                const auto expValues = m_forwardOutput.exp();
+                const auto expValues    = m_forwardOutput.exp();
                 const auto expValuesSum = expValues.sum();
                 m_forwardOutput = expValues / expValuesSum;
                 break;
@@ -77,7 +62,5 @@ namespace Mayflower
 
         return m_forwardOutput;
     }
-
 }
-
 

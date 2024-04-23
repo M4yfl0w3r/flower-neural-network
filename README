@@ -1,1 +1,5 @@
-Neural network implementation.
+Neural network implementation
+
+TODO
+- std::vector of std::variant of layers
+

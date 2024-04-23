@@ -5,10 +5,10 @@
 
 namespace Mayflower
 {
-    Dataset::Dataset(fs::path path) : m_path{path} { }
+    Dataset::Dataset(const fs::path& path) : m_path{path} {}
 
     // TODO: Change it to more readable form and not dull
-    auto Dataset::read() const -> std::pair<Tensor<float, 151u, 4u>, Tensor<std::size_t, 151u, 1u>>
+    auto Dataset::read() const -> DataWithLabels
     {
         auto file = std::ifstream{m_path, std::ios::in | std::ios::binary};
         const auto fileSize = static_cast<std::size_t>(fs::file_size(m_path));
@@ -23,20 +23,21 @@ namespace Mayflower
         while(std::getline(test, segment, '\n'))
             seglist.push_back(segment);
 
-        std::array<std::array<float, 4u>, 151u> data{};
-        std::array<std::array<std::size_t, 1u>, 151u> labels{};
+        std::array<std::array<float, Config::dataCols>, Config::dataRows> data{};
+        std::array<std::array<std::size_t, 1u>, Config::dataRows> labels{};
 
         for (auto i = 0u; const auto& row : seglist)
         {
-            if (i >= 149u) break;
+            if (i > Config::dataRows - 1) break;
 
             std::istringstream iss(row);
             std::vector<float> numbers{};
             std::string token{};
-            auto label = 10u;
+            auto label = Config::labelPos;
             
             while (std::getline(iss, token, ',')) 
             {
+                // TODO: Switch
                 if (token == "Iris-setosa")
                     label = 0u;
                 else if (token == "Iris-versicolor")
@@ -47,7 +48,7 @@ namespace Mayflower
                     numbers.push_back(std::stof(token));
             }
             
-            for (auto j = 0u; j < 4u; ++j)
+            for (auto j = 0u; j < Config::dataCols; ++j)
                 data.at(i).at(j) = numbers.at(j);
 
             labels.at(i).at(0u) = label;

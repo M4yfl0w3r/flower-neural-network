@@ -11,7 +11,7 @@ namespace Mayflower
     };
 
     template <typename Type, std::size_t Inputs, std::size_t Neurons>
-    class DenseLayer
+    class DenseLayer final
     {
     public:
         constexpr DenseLayer(Activation activation);

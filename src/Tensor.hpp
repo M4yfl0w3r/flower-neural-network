@@ -5,6 +5,7 @@
 #include <functional>
 #include <algorithm>
 #include <iostream>
+#include <utility>
 #include <cassert>
 #include <numeric>
 #include <ranges>
@@ -14,19 +15,17 @@
 namespace Mayflower
 {
     template <typename Type, std::size_t Rows, std::size_t Cols>
-    class Tensor
+    class Tensor final
     {
     public:
         constexpr Tensor() = default; 
         constexpr Tensor(std::array<std::array<Type, Cols>, Rows> data);
 
         Tensor(const Tensor<Type, Rows, Cols>&);
-        decltype(auto) operator=(const Tensor<Type, Rows, Cols>&);
+        auto& operator=(const Tensor<Type, Rows, Cols>&);
 
         Tensor(Tensor<Type, Rows, Cols>&&) noexcept;
-        decltype(auto) operator=(Tensor<Type, Rows, Cols>&&) noexcept;
-
-        constexpr auto forEachElement(std::function<void(Type&)>);
+        auto& operator=(Tensor<Type, Rows, Cols>&&) noexcept;
 
         [[nodiscard]] constexpr auto mean() -> Type;
         [[nodiscard]] constexpr auto sum() const -> Tensor<Type, 1, 1>;
@@ -34,12 +33,13 @@ namespace Mayflower
         [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
         [[nodiscard]] constexpr auto at(std::size_t x, std::size_t y) const -> Type;
 
+        constexpr auto forEachElement(std::function<void(Type&)>) -> void;
         constexpr auto log() -> void;
         constexpr auto clip(Type min, Type max) -> void;
         constexpr auto fillAt(std::size_t i, std::size_t j, Type value) -> void;
         constexpr auto negative() -> void;
         constexpr auto fill(Type value) -> void;
-        constexpr auto print() const -> void;
+        constexpr auto print(std::string_view message) const -> void;
         constexpr auto printShape() const -> void;
 
         auto fillRandomValues(std::pair<Type, Type> range) -> void;
@@ -48,51 +48,35 @@ namespace Mayflower
         std::array<std::array<Type, Cols>, Rows> m_data;
     };
 
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    constexpr Tensor<Type, Rows, Cols>::Tensor(std::array<std::array<Type, Cols>, Rows> data) : m_data{ data } {}
+    
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    Tensor<Type, Rows, Cols>::Tensor(const Tensor<Type, Rows, Cols>& other) : m_data{ other.data() } {}
+    
+    template <typename Type, std::size_t Rows, std::size_t Cols>
+    Tensor<Type, Rows, Cols>::Tensor(Tensor<Type, Rows, Cols>&& other) noexcept : m_data{ std::move(other.data()) } {}
 
     template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr Tensor<Type, Rows, Cols>::Tensor(std::array<std::array<Type, Cols>, Rows> data)
-        : m_data{data}
+    auto& Tensor<Type, Rows, Cols>::operator=(const Tensor<Type, Rows, Cols>& other) 
     {
-    }
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    Tensor<Type, Rows, Cols>::Tensor(const Tensor<Type, Rows, Cols>& other)
-        : m_data{other.data()}
-    {
-    }
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    decltype(auto) Tensor<Type, Rows, Cols>::operator=(const Tensor<Type, Rows, Cols>& other) 
-    {
-        if (this != &other)
-            m_data = other.data();
-        
+        if (this != &other) m_data = other.data();
         return *this;
     }
 
     template <typename Type, std::size_t Rows, std::size_t Cols>
-    Tensor<Type, Rows, Cols>::Tensor(Tensor<Type, Rows, Cols>&& other) noexcept
-        : m_data{std::move(other.data())}
+    auto& Tensor<Type, Rows, Cols>::operator=(Tensor<Type, Rows, Cols>&& other) noexcept
     {
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    decltype(auto) Tensor<Type, Rows, Cols>::operator=(Tensor<Type, Rows, Cols>&& other) noexcept
-    {
-        if (this != &other)
-            m_data = std::move(other.data());
-        
+        if (this != &other) m_data = std::move(other.data());
         return *this;
     }
 
     template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::forEachElement(std::function<void(Type&)> func)
+    constexpr auto Tensor<Type, Rows, Cols>::forEachElement(std::function<void(Type&)> func) -> void
     {
         for (auto& row : m_data) 
-        {
             for (auto& element : row)
                 func(element);
-        }
     }
     
     template <typename Type, std::size_t Rows, std::size_t Cols>
@@ -119,8 +103,10 @@ namespace Mayflower
     constexpr auto Tensor<Type, Rows, Cols>::sum() const -> Tensor<Type, 1u, 1u>
     {
         auto result = Type{};
+
         for (const auto& row : m_data)
             result += std::accumulate(std::begin(row), std::end(row), Type{});
+
         return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({result}));
     }
 
@@ -163,8 +149,10 @@ namespace Mayflower
     }
 
     template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::print() const -> void
+    constexpr auto Tensor<Type, Rows, Cols>::print(std::string_view message) const -> void
     {
+        std::cout << message.data() << ": ";
+
         for (const auto& row : m_data)
         {
             for (const auto& el : row)
@@ -180,9 +168,9 @@ namespace Mayflower
     }
     
     template <typename Type, std::size_t Rows, std::size_t Cols>
-    auto Tensor<Type, Rows, Cols>::fillRandomValues(std::pair<Type, Type> range) -> void
+    inline auto Tensor<Type, Rows, Cols>::fillRandomValues(std::pair<Type, Type> range) -> void
     {
-        std::ranges::for_each(m_data, [=](auto& row){ 
+        std::ranges::for_each(m_data, [=](auto& row) { 
             std::ranges::generate(row, [&](){ return Utils::randomNumber(range); } );
         });
     }
@@ -191,7 +179,7 @@ namespace Mayflower
     [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one,
                                            const Tensor<Type, RowsB, ColsB>& other)
     {
-        if constexpr (RowsA == RowsB && ColsA == ColsB)
+        if constexpr (RowsA == RowsB && ColsA == ColsB) 
         {
             const auto rows = RowsA;
             const auto cols = ColsA;

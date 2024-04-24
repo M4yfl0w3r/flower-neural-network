@@ -3,6 +3,7 @@
 #include "Tensor.hpp"
 
 #include <algorithm>
+#include <ranges>
 #include <limits>
 
 namespace Mayflower
@@ -36,9 +37,10 @@ namespace Mayflower
         }
 
         auto correctPredictions = 0u;
-        for (auto i = 0u; const auto& arg : maxIndices)
+
+        for (const auto& [index, arg] : maxIndices | std::views::enumerate )
         {
-            if (arg == labels.at(i, 0u))
+            if (arg == labels.at(index, 0u))
                 ++correctPredictions; 
         }
 
@@ -50,7 +52,7 @@ namespace Mayflower
     {
         using Inputs    = Tensor<Type, Rows, Cols>;
         using Labels    = Tensor<std::size_t, Rows, 1>;
-        // using Gradients = Tensor<Type, Rows, OutputCols>;
+        using Gradients = Tensor<Type, Rows, 1>;
 
     public:
         [[nodiscard]] constexpr auto forward(const Inputs& input, const Labels& labels)
@@ -58,10 +60,10 @@ namespace Mayflower
             m_forwardInput = input;
 
             auto confidences = Tensor<Type, Rows, 1u>{};
-            for (auto labelIndex = 0u; auto& row : input.data())
+
+            for (const auto& [index, row] : input.data() | std::views::enumerate) 
             {
-                confidences.fillAt(labelIndex, 0u, row.at(labels.at(labelIndex, 0u)));
-                ++labelIndex;
+                confidences.fillAt(index, 0u, row.at(labels.at(index, 0u)));
             }
 
             // Clip to prevent log(0.0)
@@ -72,10 +74,11 @@ namespace Mayflower
             return confidences.mean();
         }
         
-        // [[nodiscard]] constexpr auto backward(const Gradients& gradients, const Labels&  labels)
+        // [[nodiscard]] constexpr auto backward(const Gradients& gradients, const Labels& labels)
         // {
-
+        //
         // }
+
 
     private:
         Tensor<Type, Rows, 1> m_targetClasses;

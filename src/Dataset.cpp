@@ -1,6 +1,7 @@
 #include "Dataset.hpp"
 
 #include <fstream>
+#include <ranges>
 #include <string>
 
 namespace Mayflower
@@ -26,7 +27,7 @@ namespace Mayflower
         std::array<std::array<float, Config::dataCols>, Config::dataRows> data{};
         std::array<std::array<std::size_t, 1u>, Config::dataRows> labels{};
 
-        for (auto i = 0u; const auto& row : seglist)
+        for (const auto& [i, row] : seglist | std::views::enumerate)
         {
             if (i > Config::dataRows - 1) break;
 
@@ -37,7 +38,6 @@ namespace Mayflower
             
             while (std::getline(iss, token, ',')) 
             {
-                // TODO: Switch
                 if (token == "Iris-setosa")
                     label = 0u;
                 else if (token == "Iris-versicolor")
@@ -52,8 +52,8 @@ namespace Mayflower
                 data.at(i).at(j) = numbers.at(j);
 
             labels.at(i).at(0u) = label;
-            ++i;
         }
+
         
         return std::make_pair(data, labels);
     }

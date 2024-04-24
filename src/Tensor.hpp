@@ -20,11 +20,11 @@ namespace Mayflower
         constexpr Tensor() = default;
 
         constexpr Tensor(std::array<std::array<Type, Cols>, Rows> data) 
-            : m_data{ data } 
+            : m_data{ data }
         { 
 
         }
-        
+
         [[nodiscard]] constexpr auto at(std::size_t x, std::size_t y) const 
         { 
             return m_data.at(x).at(y); 
@@ -41,7 +41,7 @@ namespace Mayflower
                 std::ranges::for_each(row, func);
         }
 
-        [[nodiscard]] constexpr auto mean() const 
+        [[nodiscard]] constexpr auto mean() const
         {
             auto sum = Type{};
 
@@ -50,19 +50,19 @@ namespace Mayflower
                 sum += std::accumulate(std::begin(row), std::end(row), Type{});
             }
 
-            return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({ sum }));
+            return Tensor1D(sum / (Rows * Cols));
         }
         
         [[nodiscard]] constexpr auto sum() const
         {
-            auto result = Type{};
+            auto sum = Type{};
 
             for (const auto& row : m_data) {
                 // TODO: std::ranges::accumulate(row, Type{}); when available
-                result += std::accumulate(std::begin(row), std::end(row), Type{});
+                sum += std::accumulate(std::begin(row), std::end(row), Type{});
             }
 
-            return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({ result }));
+            return Tensor1D(sum);
         }
 
         [[nodiscard]] constexpr auto exp()
@@ -106,6 +106,10 @@ namespace Mayflower
         }
 
     private:
+        constexpr auto Tensor1D(auto value) const {
+            return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({ value }));
+        }
+
         std::array<std::array<Type, Cols>, Rows> m_data;
     };
     
@@ -166,4 +170,3 @@ namespace Mayflower
         }
     }
 }
-

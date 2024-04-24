@@ -73,6 +73,11 @@ namespace Mayflower
             return result;
         }
 
+        [[nodiscard]] constexpr auto shape() const
+        {
+            return std::pair { Rows, Cols };
+        }
+
         constexpr auto log() 
         { 
             forEachElement([=](auto& el){ el = std::log(el); }); 

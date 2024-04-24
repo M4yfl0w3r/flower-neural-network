@@ -24,16 +24,15 @@ namespace Mayflower
     //     return result;
     // }
 
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    [[nodiscard]] constexpr auto accuracy(const Tensor<Type, Rows, Cols>& input,
-                                          const Tensor<std::size_t, Rows, 1u>& labels)
+    [[nodiscard]] constexpr auto accuracy(const auto& input, const auto& labels)
     {
-        auto maxIndices = std::array<std::size_t, Rows>();
+        const auto rows = labels.shape().first;
+        auto maxIndices = std::vector<std::size_t>{};
 
-        for (auto i = 0u; const auto& row : input.data())        
+        for (const auto& row : input.data())        
         {
-            maxIndices.at(i++) = static_cast<std::size_t>(std::ranges::distance(std::begin(row), 
-                                                          std::ranges::max_element(row)));
+            maxIndices.push_back(static_cast<std::size_t>(std::ranges::distance(std::begin(row), 
+                                                          std::ranges::max_element(row))));
         }
 
         auto correctPredictions = 0u;
@@ -43,7 +42,7 @@ namespace Mayflower
                 ++correctPredictions; 
         }
 
-        return correctPredictions / Rows;
+        return correctPredictions / rows;
     }
 
     template <typename Type, std::size_t Rows, std::size_t Cols>

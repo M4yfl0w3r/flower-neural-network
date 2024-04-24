@@ -13,217 +13,152 @@
 
 namespace Mayflower
 {
-    template <typename Type, std::size_t Rows, std::size_t Cols>
+    template<typename Type, std::size_t Rows, std::size_t Cols>
     class Tensor final
     {
     public:
-        constexpr Tensor() = default; 
-        constexpr Tensor(std::array<std::array<Type, Cols>, Rows> data);
+        constexpr Tensor() = default;
 
-        Tensor(const Tensor<Type, Rows, Cols>&);
-        auto& operator=(const Tensor<Type, Rows, Cols>&);
+        constexpr Tensor(std::array<std::array<Type, Cols>, Rows> data) 
+            : m_data{ data } 
+        { 
 
-        Tensor(Tensor<Type, Rows, Cols>&&) noexcept;
-        auto& operator=(Tensor<Type, Rows, Cols>&&) noexcept;
+        }
+        
+        [[nodiscard]] constexpr auto at(std::size_t x, std::size_t y) const 
+        { 
+            return m_data.at(x).at(y); 
+        }
 
-        [[nodiscard]] constexpr auto mean() -> Type;
-        [[nodiscard]] constexpr auto sum() const -> Tensor<Type, 1, 1>;
-        [[nodiscard]] constexpr auto exp() const -> Tensor<Type, Rows, Cols>;
-        [[nodiscard]] constexpr auto data() const -> std::array<std::array<Type, Cols>, Rows>;
-        [[nodiscard]] constexpr auto at(std::size_t x, std::size_t y) const -> Type;
+        [[nodiscard]] constexpr auto data() const 
+        { 
+            return m_data; 
+        }
 
-        constexpr auto forEachElement(std::function<void(Type&)>) -> void;
-        constexpr auto log() -> void;
-        constexpr auto clip(Type min, Type max) -> void;
-        constexpr auto fillAt(std::size_t i, std::size_t j, Type value) -> void;
-        constexpr auto negative() -> void;
-        constexpr auto fill(Type value) -> void;
-        constexpr auto print() const -> void;
-        constexpr auto printShape() const -> void;
+        constexpr auto forEachElement(std::function<void(Type&)> func) 
+        {
+            for (auto& row : m_data) 
+                std::ranges::for_each(row, func);
+        }
 
-        auto fillRandomValues(std::pair<Type, Type> range) -> void;
+        [[nodiscard]] constexpr auto mean() const 
+        {
+            auto sum = Type{};
+
+            for (const auto& row : m_data) {
+                // TODO: std::ranges::accumulate(row, Type{}); when available
+                sum += std::accumulate(std::begin(row), std::end(row), Type{});
+            }
+
+            return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({ sum }));
+        }
+        
+        [[nodiscard]] constexpr auto sum() const
+        {
+            auto result = Type{};
+
+            for (const auto& row : m_data) {
+                // TODO: std::ranges::accumulate(row, Type{}); when available
+                result += std::accumulate(std::begin(row), std::end(row), Type{});
+            }
+
+            return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({ result }));
+        }
+
+        [[nodiscard]] constexpr auto exp()
+        {
+            // TODO: Do not use forEachElement
+            auto result = Tensor<Type, Rows, Cols>(m_data);
+            result.forEachElement([](auto& el){ el = std::exp(el); });
+            return result;
+        }
+
+        constexpr auto log() 
+        { 
+            forEachElement([=](auto& el){ el = std::log(el); }); 
+        }
+        
+        constexpr auto clip(Type min, Type max) 
+        { 
+            forEachElement([=](auto& el){ el = std::clamp(el, min, max); }); 
+        }
+
+        constexpr auto fillAt(std::size_t i, std::size_t j, Type value) 
+        { 
+            m_data.at(i).at(j) = value; 
+        }
+
+        constexpr auto negative() 
+        { 
+            forEachElement([](auto& el){ el = -el;}); 
+        }
+
+        constexpr auto fill(Type value) 
+        {
+            std::ranges::for_each(m_data, [=](auto& row) { std::ranges::fill(row, value); });
+        }
+
+        auto fillRandomValues(std::pair<Type, Type> range) -> void
+        {
+            std::ranges::for_each(m_data, [=](auto& row) { 
+                std::ranges::generate(row, [&](){ return Utils::randomNumber(range); } );
+            });
+        }
 
     private:
         std::array<std::array<Type, Cols>, Rows> m_data;
     };
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr Tensor<Type, Rows, Cols>::Tensor(std::array<std::array<Type, Cols>, Rows> data) : m_data{ data } {}
     
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    Tensor<Type, Rows, Cols>::Tensor(const Tensor<Type, Rows, Cols>& other) : m_data{ other.data() } {}
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    Tensor<Type, Rows, Cols>::Tensor(Tensor<Type, Rows, Cols>&& other) noexcept : m_data{ std::move(other.data()) } {}
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    auto& Tensor<Type, Rows, Cols>::operator=(const Tensor<Type, Rows, Cols>& other) 
+    constexpr auto print(const auto& tensor) 
     {
-        if (this != &other) m_data = other.data();
-        return *this;
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    auto& Tensor<Type, Rows, Cols>::operator=(Tensor<Type, Rows, Cols>&& other) noexcept
-    {
-        if (this != &other) m_data = std::move(other.data());
-        return *this;
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::forEachElement(std::function<void(Type&)> func) -> void
-    {
-        for (auto& row : m_data) 
-            for (auto& element : row)
-                func(element);
-    }
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::data() const -> std::array<std::array<Type, Cols>, Rows>
-    {
-        return m_data;
-    }
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::at(std::size_t x, std::size_t y) const -> Type
-    {
-        return m_data.at(x).at(y);
-    }
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::mean() -> Type
-    {
-        auto sum = Type{};
-        this->forEachElement([&sum](auto el){ sum += el; });
-        return sum / (Rows * Cols);
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::sum() const -> Tensor<Type, 1u, 1u>
-    {
-        auto result = Type{};
-
-        for (const auto& row : m_data)
-            result += std::accumulate(std::begin(row), std::end(row), Type{});
-
-        return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({result}));
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::exp() const -> Tensor<Type, Rows, Cols> 
-    {
-        auto result = Tensor<Type, Rows, Cols>(m_data);
-        result.forEachElement([](auto& el){ el = std::exp(el); });
-        return result;
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::log() -> void
-    {
-        this->forEachElement([=](auto& el){ el = std::log(el); });
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::clip(Type min, Type max) -> void
-    {
-        this->forEachElement([=](auto& el){ el = std::clamp(el, min, max); });
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::fillAt(std::size_t i, std::size_t j, Type value) -> void
-    {
-        m_data.at(i).at(j) = value;
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::negative() -> void
-    {
-        this->forEachElement([](auto& el){ el = -el;});
-    }
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::fill(Type value) -> void
-    {
-        std::ranges::for_each(m_data, [=](auto& row) { std::ranges::fill(row, value); });
-    }
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::print() const -> void
-    {
-        for (const auto& row : m_data)
-        {
+        for (const auto& row : tensor.data()) {
             for (const auto& el : row)
                 std::cout << el << ' ';
             std::cout << '\n';
         }
     }
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto Tensor<Type, Rows, Cols>::printShape() const -> void
-    {
-        std::cout << "Shape = (" << Rows << ", " << Cols << ")\n";
-    }
-    
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    inline auto Tensor<Type, Rows, Cols>::fillRandomValues(std::pair<Type, Type> range) -> void
-    {
-        std::ranges::for_each(m_data, [=](auto& row) { 
-            std::ranges::generate(row, [&](){ return Utils::randomNumber(range); } );
-        });
-    }
 
-    template <typename Type, 
-              std::size_t RowsA, std::size_t ColsA, 
-              std::size_t RowsB, std::size_t ColsB>
-    [[nodiscard]] constexpr auto operator+(const Tensor<Type, RowsA, ColsA>& one,
-                                           const Tensor<Type, RowsB, ColsB>& other)
+    template <typename T, std::size_t Rows, std::size_t Cols>
+    [[nodiscard]] constexpr auto operator+(const Tensor<T, Rows, Cols>& one,
+                                           const Tensor<T, Rows, Cols>& other)
     {
-        if constexpr (RowsA == RowsB && ColsA == ColsB) 
-        {
-            const auto rows = RowsA;
-            const auto cols = ColsA;
-            
-            std::array<std::array<Type, cols>, rows> result{};
+        auto result = Tensor<T, Rows, Cols>{};
 
-            for (auto i = 0u; i < rows; ++i)
-            {
-                for (auto j = 0u; j < cols; ++j)
-                    result.at(i).at(j) = one.at(i, j) + other.at(i, j);
-            }
+        for (auto i = 0u; i < Rows; ++i)
+            for (auto j = 0u; j < Cols; ++j)
+                result.fillAt(i, j, one.at(i, j) + other.at(i, j));
 
-            return Tensor<Type, rows, cols>(result);
-        }
+        return result;
     }
 
-    template <typename Type, 
-              std::size_t RowsA, std::size_t ColsA, 
-              std::size_t RowsB, std::size_t ColsB>
-    [[nodiscard]] constexpr auto operator*(const Tensor<Type, RowsA, ColsA>& one,
-                                           const Tensor<Type, RowsB, ColsB>& other)
+    template <typename T, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
+    [[nodiscard]] constexpr auto operator*(const Tensor<T, RowsA, ColsA>& one,
+                                           const Tensor<T, RowsB, ColsB>& other)
     {
         static_assert(ColsA == RowsB);
-        std::array<std::array<Type, ColsB>, RowsA> result{};
+
+        auto result = Tensor<T, RowsA, ColsB>{};
 
         // TODO: Strassen algorithm
         for (auto i = 0u; i < RowsA; ++i)
         {
             for (auto j = 0u; j < ColsB; ++j)
             {
-                Type sum{};
+                T sum{};
                 for (auto k = 0u; k < ColsA; ++k)
                     sum += one.at(i, k) * other.at(k, j);
-                result.at(i).at(j) = sum;
+                result.fillAt(i, j, sum);
             }
         }
         
-        return Tensor<Type, RowsA, ColsB>(result);
+        return result;
     }
 
-    template <typename Type, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
-    [[nodiscard]] constexpr auto operator/(const Tensor<Type, RowsA, ColsA>& one, 
-                                           const Tensor<Type, RowsB, ColsB>& other)
+    template <typename T, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
+    [[nodiscard]] constexpr auto operator/(const Tensor<T, RowsA, ColsA>& one, 
+                                           const Tensor<T, RowsB, ColsB>& other)
     {
-        if (RowsB == 1 && ColsB == 1)
+        if constexpr (RowsB == 1 && ColsB == 1)
         {
             auto result = one;
             result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });

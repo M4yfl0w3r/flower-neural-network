@@ -30,10 +30,10 @@ namespace Mayflower
     {
         auto maxIndices = std::array<std::size_t, Rows>();
 
-        // TODO: Change to std::views::zip when available
         for (auto i = 0u; const auto& row : input.data())        
         {
-            maxIndices.at(i++) = static_cast<std::size_t>(std::ranges::distance(std::begin(row), std::ranges::max_element(row)));
+            maxIndices.at(i++) = static_cast<std::size_t>(std::ranges::distance(std::begin(row), 
+                                                          std::ranges::max_element(row)));
         }
 
         auto correctPredictions = 0u;
@@ -49,35 +49,34 @@ namespace Mayflower
     template <typename Type, std::size_t Rows, std::size_t Cols>
     class CategoricalCrossEntropy
     {
+        using InputTensor = Tensor<Type, Rows, Cols>;
+        using LabelsTensor = Tensor<std::size_t, Rows, 1>;
+
     public:
-        [[nodiscard]] constexpr auto forward(const Tensor<Type, Rows, Cols>& input, 
-                                             const Tensor<std::size_t, Rows, 1>& labels);
+        [[nodiscard]] constexpr auto forward(const InputTensor& input, const LabelsTensor& labels)
+        {
+            m_forwardInput = input;
+
+            auto confidences = Tensor<Type, Rows, 1u>{};
+            for (auto labelIndex = 0u; auto& row : input.data())
+            {
+                confidences.fillAt(labelIndex, 0u, row.at(labels.at(labelIndex, 0u)));
+                ++labelIndex;
+            }
+
+            // Clip to prevent log(0.0)
+            confidences.clip(std::numeric_limits<Type>::min(), 1 - std::numeric_limits<Type>::min());
+            confidences.log();
+            confidences.negative();
+
+            return confidences.mean();
+        }
         
+        [[nodiscard]] constexpr auto backward();
+
     private:
-        Tensor<Type, Rows, 1> targetClasses;
+        Tensor<Type, Rows, 1> m_targetClasses;
         Tensor<Type, Rows, Cols> m_forwardInput;
     };
-
-
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    constexpr auto CategoricalCrossEntropy<Type, Rows, Cols>::forward(const Tensor<Type, Rows, Cols>& input,
-                                                                      const Tensor<std::size_t, Rows, 1u>& labels)
-    {
-        m_forwardInput = input;
-
-        // TODO: Change to std::views::zip function when C++23 available
-        auto confidences = Tensor<Type, Rows, 1u>{};
-        for (auto labelIndex = 0u; auto& row : input.data())
-        {
-            confidences.fillAt(labelIndex, 0u, row.at(labels.at(labelIndex, 0u)));
-            ++labelIndex;
-        }
-
-        // Clip to prevent log(0.0)
-        confidences.clip(std::numeric_limits<Type>::min(), 1 - std::numeric_limits<Type>::min());
-        confidences.log();
-        confidences.negative();
-        return confidences.mean();
-    }
 }
 

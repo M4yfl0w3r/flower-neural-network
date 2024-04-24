@@ -19,10 +19,16 @@ auto main() -> int
 
     auto o1 = st.forward(firstRow);
     auto o2 = nd.forward(o1);
+    
+    std::cout << "Activation output: " << o2 << '\n';
 
-    const auto lossVal = loss.forward(o2, firstCol);
+    const auto lossVal = loss.value(o2, firstCol);
     const auto accVal  = accuracy(o2, firstCol);
 
-    std::cout << "Loss : "     << lossVal << '\n';
-    std::cout << "Accuracy : " << accVal * 100 << "%\n";
+    std::cout << "Loss: "     << lossVal << '\n';
+    std::cout << "Accuracy: " << accVal * 100 << "%\n";
+
+    auto o3 = loss.backward(o2);
+    std::cout << "Loss backward output = " << o3 << '\n';
 }
+

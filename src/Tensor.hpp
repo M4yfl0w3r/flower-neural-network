@@ -185,5 +185,14 @@ namespace Mayflower
             result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });
             return result;
         }
+
+        if constexpr (RowsA == 1 && RowsB == 1 && ColsA == ColsB)
+        {
+            // TODO: Better ifs
+            auto result = one;
+            result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });
+            return result;
+        }
     }
 }
+

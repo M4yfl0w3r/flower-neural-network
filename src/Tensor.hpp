@@ -25,7 +25,12 @@ namespace Mayflower
 
         }
 
-        [[nodiscard]] constexpr auto at(std::size_t x, std::size_t y) const 
+        constexpr Tensor(Type value)
+        {
+            fill(value);
+        }
+
+        constexpr auto at(std::size_t x, std::size_t y) const 
         { 
             return m_data.at(x).at(y);
         }
@@ -45,7 +50,8 @@ namespace Mayflower
         {
             auto sum = Type{};
 
-            for (const auto& row : m_data) {
+            for (const auto& row : m_data) 
+            {
                 // TODO: std::ranges::accumulate(row, Type{}); when available
                 sum += std::accumulate(std::begin(row), std::end(row), Type{});
             }
@@ -57,8 +63,8 @@ namespace Mayflower
         {
             auto sum = Type{};
 
-            for (const auto& row : m_data) {
-                // TODO: std::ranges::accumulate(row, Type{}); when available
+            for (const auto& row : m_data) 
+            {
                 sum += std::accumulate(std::begin(row), std::end(row), Type{});
             }
 

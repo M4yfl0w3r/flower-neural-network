@@ -3,7 +3,7 @@
 #include "Dataset.hpp"
 #include "DenseLayer.hpp"
 
-auto main() -> int
+auto main() -> int 
 {
     using namespace Mayflower;
 
@@ -15,15 +15,14 @@ auto main() -> int
     auto loss = CategoricalCrossEntropy<float, 1u, 3u>();
     
     auto firstRow = Tensor<float, 1u, 4u>{ { data.data().at(0) } };
-    auto firstCol = Tensor<std::size_t, 1u, 1u>{ { labels.data().at(0).at(0) } };
+    auto firstCol = Tensor<std::size_t, 1u, 1u>{ {{ labels.data().at(0).at(0) }} };
 
     auto o1 = st.forward(firstRow);
     auto o2 = nd.forward(o1);
-     
-    std::cout << "Forward pass output = " << o2 << '\n';
-    const auto lossValue = loss.forward(o2, firstCol);
-    const auto accValue  = accuracy(o2, firstCol);
-    
-    std::cout << "Loss : "     << lossValue << '\n';
-    std::cout << "Accuracy : " << accValue * 100     << "%\n";
+
+    const auto lossVal = loss.forward(o2, firstCol);
+    const auto accVal  = accuracy(o2, firstCol);
+
+    std::cout << "Loss : "     << lossVal << '\n';
+    std::cout << "Accuracy : " << accVal * 100 << "%\n";
 }

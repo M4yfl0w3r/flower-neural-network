@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Mayflower::Config
+namespace Mayflower::Config 
 {
     inline constexpr auto dataRows = 150u;
     inline constexpr auto dataCols = 4u;

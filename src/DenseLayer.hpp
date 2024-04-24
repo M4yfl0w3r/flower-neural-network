@@ -4,14 +4,14 @@
 
 namespace Mayflower
 {
-    enum class Activation
+    enum class Activation 
     {
         ReLU,
         Softmax
     };
 
     template <typename Type, std::size_t Inputs, std::size_t Neurons>
-    class DenseLayer final
+    class DenseLayer final 
     {
     public:
         constexpr DenseLayer(Activation activation);
@@ -32,7 +32,7 @@ namespace Mayflower
 
     template <typename Type, std::size_t Inputs, std::size_t Neurons>
     constexpr DenseLayer<Type, Inputs, Neurons>::DenseLayer(Activation activation)
-        : m_numInputs{Inputs}, m_numNeurons{Neurons}, m_activation{activation}
+        : m_numInputs{Inputs}, m_numNeurons{Neurons}, m_activation{activation} 
     {
         m_weights = Tensor<Type, Inputs, Neurons>();
         m_weights.fillWithRandomValues( { 0.0f, 1.0f } );

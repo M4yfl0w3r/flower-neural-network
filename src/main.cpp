@@ -20,9 +20,10 @@ auto main() -> int
     auto o1 = st.forward(firstRow);
     auto o2 = nd.forward(o1);
      
+    std::cout << "Forward pass output = " << o2 << '\n';
     const auto lossValue = loss.forward(o2, firstCol);
     const auto accValue  = accuracy<float, 1u, 3u>(o2, firstCol);
     
-    std::cout << "Loss : " << lossValue.at(0, 0) << '\n';
-    std::cout << "Accuracy : " << accValue * 100 << "%\n";
+    std::cout << "Loss : "     << lossValue << '\n';
+    std::cout << "Accuracy : " << accValue * 100     << "%\n";
 }

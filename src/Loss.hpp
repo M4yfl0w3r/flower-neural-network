@@ -12,17 +12,17 @@ namespace Mayflower
         CategoricalCrossEntropy
     };
 
-    template <std::size_t Rows, std::size_t Cols>
-    [[nodiscard]] constexpr auto oneHotEncoding(const Tensor<std::size_t, Rows, 1u>& tensor)
-    {
-        auto result = Tensor<std::size_t, Rows, Cols>();
-        result.fill(0.0f);
+    // template <std::size_t Rows, std::size_t Cols>
+    // [[nodiscard]] constexpr auto oneHotEncoding(const Tensor<std::size_t, Rows, 1u>& tensor)
+    // {
+    //     auto result = Tensor<std::size_t, Rows, Cols>();
+    //     result.fill(0.0f);
 
-        for (auto i = 0u; i < Rows; ++i)
-            result.fillAt(i, tensor.at(i, 0u), 1u);
+    //     for (auto i = 0u; i < Rows; ++i)
+    //         result.fillAt(i, tensor.at(i, 0u), 1u);
 
-        return result;
-    }
+    //     return result;
+    // }
 
     template <typename Type, std::size_t Rows, std::size_t Cols>
     [[nodiscard]] constexpr auto accuracy(const Tensor<Type, Rows, Cols>& input,
@@ -49,11 +49,12 @@ namespace Mayflower
     template <typename Type, std::size_t Rows, std::size_t Cols>
     class CategoricalCrossEntropy
     {
-        using InputTensor = Tensor<Type, Rows, Cols>;
-        using LabelsTensor = Tensor<std::size_t, Rows, 1>;
+        using Inputs    = Tensor<Type, Rows, Cols>;
+        using Labels    = Tensor<std::size_t, Rows, 1>;
+        // using Gradients = Tensor<Type, Rows, OutputCols>;
 
     public:
-        [[nodiscard]] constexpr auto forward(const InputTensor& input, const LabelsTensor& labels)
+        [[nodiscard]] constexpr auto forward(const Inputs& input, const Labels& labels)
         {
             m_forwardInput = input;
 
@@ -72,7 +73,10 @@ namespace Mayflower
             return confidences.mean();
         }
         
-        [[nodiscard]] constexpr auto backward();
+        // [[nodiscard]] constexpr auto backward(const Gradients& gradients, const Labels&  labels)
+        // {
+
+        // }
 
     private:
         Tensor<Type, Rows, 1> m_targetClasses;

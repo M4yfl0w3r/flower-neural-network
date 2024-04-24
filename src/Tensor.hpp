@@ -27,12 +27,12 @@ namespace Mayflower
 
         [[nodiscard]] constexpr auto at(std::size_t x, std::size_t y) const 
         { 
-            return m_data.at(x).at(y); 
+            return m_data.at(x).at(y);
         }
 
         [[nodiscard]] constexpr auto data() const 
         { 
-            return m_data; 
+            return m_data;
         }
 
         constexpr auto forEachElement(std::function<void(Type&)> func) 
@@ -98,11 +98,26 @@ namespace Mayflower
             std::ranges::for_each(m_data, [=](auto& row) { std::ranges::fill(row, value); });
         }
 
-        auto fillRandomValues(std::pair<Type, Type> range) -> void
+        auto fillWithRandomValues(std::pair<Type, Type> range) -> void
         {
             std::ranges::for_each(m_data, [=](auto& row) { 
                 std::ranges::generate(row, [&](){ return Utils::randomNumber(range); } );
             });
+        }
+
+        friend auto& operator<< (std::ostream& stream, const Tensor& tensor) {
+            if constexpr (Rows == 1 && Cols == 1) {
+                stream << tensor.at(0, 0);
+            }
+            else {
+                for (const auto& row : tensor.data()) {
+                    for (const auto& el : row)
+                        stream << el << ' ';
+                    stream << '\n';
+                }
+            }
+
+            return stream;
         }
 
     private:
@@ -112,19 +127,10 @@ namespace Mayflower
 
         std::array<std::array<Type, Cols>, Rows> m_data;
     };
-    
-    constexpr auto print(const auto& tensor) 
-    {
-        for (const auto& row : tensor.data()) {
-            for (const auto& el : row)
-                std::cout << el << ' ';
-            std::cout << '\n';
-        }
-    }
 
     template <typename T, std::size_t Rows, std::size_t Cols>
-    [[nodiscard]] constexpr auto operator+(const Tensor<T, Rows, Cols>& one,
-                                           const Tensor<T, Rows, Cols>& other)
+    [[nodiscard]] constexpr auto operator+ (const Tensor<T, Rows, Cols>& one,
+                                            const Tensor<T, Rows, Cols>& other)
     {
         auto result = Tensor<T, Rows, Cols>{};
 
@@ -136,8 +142,8 @@ namespace Mayflower
     }
 
     template <typename T, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
-    [[nodiscard]] constexpr auto operator*(const Tensor<T, RowsA, ColsA>& one,
-                                           const Tensor<T, RowsB, ColsB>& other)
+    [[nodiscard]] constexpr auto operator* (const Tensor<T, RowsA, ColsA>& one,
+                                            const Tensor<T, RowsB, ColsB>& other)
     {
         static_assert(ColsA == RowsB);
 
@@ -159,8 +165,8 @@ namespace Mayflower
     }
 
     template <typename T, std::size_t RowsA, std::size_t ColsA, std::size_t RowsB, std::size_t ColsB>
-    [[nodiscard]] constexpr auto operator/(const Tensor<T, RowsA, ColsA>& one, 
-                                           const Tensor<T, RowsB, ColsB>& other)
+    [[nodiscard]] constexpr auto operator/ (const Tensor<T, RowsA, ColsA>& one, 
+                                            const Tensor<T, RowsB, ColsB>& other)
     {
         if constexpr (RowsB == 1 && ColsB == 1)
         {

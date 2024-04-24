@@ -35,10 +35,10 @@ namespace Mayflower
         : m_numInputs{Inputs}, m_numNeurons{Neurons}, m_activation{activation}
     {
         m_weights = Tensor<Type, Inputs, Neurons>();
-        m_weights.fillRandomValues( { 0.0f, 1.0f } );
+        m_weights.fillWithRandomValues( { 0.0f, 1.0f } );
 
         m_biases = Tensor<Type, 1, Neurons>();
-        m_biases.fillRandomValues( { 0.0f, 1.0f } );
+        m_biases.fillWithRandomValues( { 0.0f, 1.0f } );
     }
 
     template <typename Type, std::size_t Inputs, std::size_t Neurons>

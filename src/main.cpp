@@ -30,5 +30,10 @@ auto main() -> int
 
     auto o3 = loss.backward(o2);
     std::cout << "Loss backward output = " << o3 << '\n';
+
+    auto o4 = nd.backward(o3);
+
+    std::cout << "2nd backward shape  = " << o4.shape().first << ", " << o4.shape().second << '\n';
+    std::cout << "2nd backward output = " << o4 << '\n';
 }
 

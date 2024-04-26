@@ -14,22 +14,23 @@ namespace Mayflower
         CategoricalCrossEntropy
     };
 
-    template <typename Type, std::size_t Rows, std::size_t Cols>
-    [[nodiscard]] constexpr auto oneHotEncoding(const Tensor<std::size_t, Rows, 1u>& labels)
+    static constexpr auto oneHotEncoding = []<typename T, std::size_t R, std::size_t C>(const auto& labels) 
     {
-        auto result = Tensor<Type, Rows, Cols>{ 0 };
+        auto result = Tensor<T, R, C>{ 0 };
 
-        for (auto i = 0u; i < Rows; ++i)
-            result.fillAt(i, labels.at(i, 0u), static_cast<Type>(1));
+        // TODO: views::to?
+        for (auto i = 0u; i < R; ++i)
+            result.fillAt(i, labels.at(i, 0u), static_cast<T>(1));
 
         return result;
-    }
+    };
 
     [[nodiscard]] constexpr auto accuracy(const auto& input, const auto& labels) 
     {
         const auto rows = labels.shape().first;
         auto maxIndices = std::vector<std::size_t>{};
 
+        // TODO: Merge it to one for
         for (const auto& row : input.data()) 
         {
             maxIndices.push_back(static_cast<std::size_t>(std::ranges::distance(std::begin(row), 
@@ -71,9 +72,10 @@ namespace Mayflower
             return confidences.mean();
         }
 
-        [[nodiscard]] constexpr auto backward([[maybe_unused]] const Inputs& gradients) 
+        [[nodiscard]] constexpr auto backward(const Inputs& gradients) 
         {
-            auto labels = oneHotEncoding<float, 1, Config::numClasses>(m_trueLabels);
+            // auto labels = oneHotEncoding<float, 1, Config::numClasses>(m_trueLabels);
+            auto labels = oneHotEncoding.operator()<float, 1, Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
             output.negative(); // TODO: Add - operator to the Tensor class
             return output;

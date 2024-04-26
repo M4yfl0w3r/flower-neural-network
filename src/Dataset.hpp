@@ -15,7 +15,7 @@ namespace Mayflower
                                          Tensor<std::size_t, Config::dataRows, 1u>>;
 
     public:
-        Dataset(const fs::path& path);
+        explicit Dataset(const fs::path& path);
 
         auto read() const -> DataWithLabels;
 

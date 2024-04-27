@@ -1,8 +1,10 @@
-#pragma once
+module;
 
 #include <random>
 
-namespace Utils 
+export module utilities;
+
+export namespace Utilities
 {
     template <typename Type>
     [[nodiscard]] auto randomNumber(std::pair<Type, Type> range) -> Type 
@@ -13,4 +15,3 @@ namespace Utils
         return distribution(generator);
     }
 }
-

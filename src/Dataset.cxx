@@ -1,18 +1,24 @@
-#include "Dataset.hpp"
+module;
 
+import config;
+
+#include <filesystem>
+#include <iostream>
 #include <fstream>
 #include <ranges>
+#include <vector>
 #include <string>
 
-namespace Mayflower
-{
-    Dataset::Dataset(const fs::path& path) : m_path{path} {}
+export module dataset;
 
-    // TODO: Change it to more readable form and not dull
-    auto Dataset::read() const -> DataWithLabels
-    {
-        auto file = std::ifstream{m_path, std::ios::in | std::ios::binary};
-        const auto fileSize = static_cast<std::size_t>(fs::file_size(m_path));
+namespace fs = std::filesystem;
+
+export namespace Dataset {
+    auto readFile(const fs::path& path) {
+        using namespace Mayflower;
+
+        auto file = std::ifstream{path, std::ios::in | std::ios::binary};
+        const auto fileSize = static_cast<std::size_t>(fs::file_size(path));
 
         auto buffer = std::string(fileSize, '\0');
         file.read(buffer.data(), static_cast<std::streamsize>(fileSize));
@@ -53,9 +59,7 @@ namespace Mayflower
 
             labels.at(i).at(0u) = label;
         }
-
         
         return std::make_pair(data, labels);
     }
 }
-

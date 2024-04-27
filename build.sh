@@ -18,7 +18,6 @@ fi
 
 mkdir -p build
 cd build
-cmake ..
-make
+CXX=clang++ CC=clang cmake -GNinja ..
+ninja -v
 ./flower_neural_network
-

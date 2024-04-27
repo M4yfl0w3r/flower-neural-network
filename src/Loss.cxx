@@ -1,11 +1,8 @@
 module;
 
+import std;
 import tensor;
 import config;
-
-#include <algorithm>
-#include <ranges>
-#include <limits>
 
 export module loss;
 
@@ -16,7 +13,7 @@ export namespace Loss
         CategoricalCrossEntropy
     };
 
-    static constexpr auto oneHotEncoding = []<typename T, std::size_t R, std::size_t C>(const auto& labels) {
+    inline constexpr auto oneHotEncoding = []<typename T, std::size_t R, std::size_t C>(const auto& labels) {
         auto result = Tensor<T, R, C>{ 0 };
 
         // TODO: views::to?
@@ -32,15 +29,16 @@ export namespace Loss
         auto maxIndices = std::vector<std::size_t>{};
 
         // TODO: Merge it to one for
-        // for (const auto& row : input.data()) {
-        //     maxIndices.push_back(static_cast<std::size_t>(std::ranges::distance(std::begin(row), std::ranges::max_element(row))));
-        // }
+        for (const auto& row : input.data()) {
+            maxIndices.push_back(static_cast<std::size_t>(std::ranges::distance(std::begin(row), std::ranges::max_element(row))));
+        }
 
         auto correctPredictions = 0u;
 
-        for (const auto& [index, arg] : maxIndices | std::views::enumerate) {
-            if (arg == labels.at(index, 0u))
-                ++correctPredictions; 
+        for (auto i = 0u; const auto& arg : maxIndices) {
+            if (arg == labels.at(i, 0u))
+                ++correctPredictions;
+            ++i;
         }
 
         return correctPredictions / rows;
@@ -57,8 +55,8 @@ export namespace Loss
             m_trueLabels     = trueLabels;
             auto confidences = Tensor<Type, Rows, 1u>{};
 
-            for (const auto& [index, row] : predictions.data() | std::views::enumerate) {
-                confidences.fillAt(index, 0u, row.at(trueLabels.at(index, 0u)));
+            for (auto i = 0u; auto& row : predictions.data()) {
+                confidences.fillAt(i, 0u, row.at(trueLabels.at(i, 0u)));
             }
 
             // Clip to prevent log(0.0)
@@ -69,7 +67,7 @@ export namespace Loss
         }
 
         [[nodiscard]] constexpr auto backward(const Inputs& gradients) {
-            auto labels = oneHotEncoding.operator()<float, 1, Config::numClasses>(m_trueLabels);
+            auto labels = oneHotEncoding.operator()<float, 1, Mayflower::Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
             output.negative(); // TODO: Add - operator to the Tensor class
             return output;

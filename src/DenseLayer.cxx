@@ -1,8 +1,7 @@
 module;
 
+import std;
 import tensor;
-
-#include <cstddef>
 
 export module dense_layer;
 

@@ -1,6 +1,6 @@
 module;
 
-#include <random>
+import std;
 
 export module utilities;
 

@@ -1,15 +1,7 @@
 module;
 
+import std;
 import utilities;
-
-#include <string_view>
-#include <functional>
-#include <algorithm>
-#include <iostream>
-#include <utility>
-#include <numeric>
-#include <cmath>
-#include <array>
 
 export module tensor;
 
@@ -102,7 +94,7 @@ public:
     auto print() const {
         for (const auto& row : m_data) {
             for (const auto& el : row) {
-                std::cout << el << ", ";
+                std::cout << el << "  ";
             }
             std::cout << '\n';
         }

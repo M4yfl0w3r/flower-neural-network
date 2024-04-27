@@ -1,13 +1,7 @@
 module;
 
+import std;
 import config;
-
-#include <filesystem>
-#include <iostream>
-#include <fstream>
-#include <ranges>
-#include <vector>
-#include <string>
 
 export module dataset;
 
@@ -33,7 +27,8 @@ export namespace Dataset {
         std::array<std::array<float, Config::dataCols>, Config::dataRows> data{};
         std::array<std::array<std::size_t, 1u>, Config::dataRows> labels{};
 
-        for (const auto& [i, row] : seglist | std::views::enumerate)
+        // For some reason enumerate does not work with import std.
+        for (auto i = 0u; const auto& row : seglist)
         {
             if (i > Config::dataRows - 1) break;
 
@@ -58,6 +53,7 @@ export namespace Dataset {
                 data.at(i).at(j) = numbers.at(j);
 
             labels.at(i).at(0u) = label;
+            ++i;
         }
         
         return std::make_pair(data, labels);

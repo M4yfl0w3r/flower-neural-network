@@ -17,7 +17,6 @@ if ! file_exists "assets/iris/iris.data"; then
 fi
 
 mkdir -p build
-cd build
-CXX=clang++ CC=clang cmake -GNinja ..
-ninja -v
-./flower_neural_network
+cmake -G Ninja -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DLIBCXX_BUILD=/home/hope/Sources/llvm-project/build
+ninja -C build
+build/flower_neural_network

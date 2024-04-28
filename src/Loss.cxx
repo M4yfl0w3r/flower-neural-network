@@ -8,15 +8,14 @@ export module loss;
 
 namespace Loss 
 {
-    enum class Loss
+    enum class LossFunction
     {
         CategoricalCrossEntropy
     };
 
     static constexpr auto oneHotEncoding = []<typename T, std::size_t R, std::size_t C>(const auto& labels) {
-        auto result = Tensor<T, R, C>{ 0 };
+        auto result = Tensor<T, R, C>{ T{} };
 
-        // TODO: views::to?
         for (auto i = 0u; i < R; ++i) {
             result.fillAt(i, labels.at(i, 0u), static_cast<T>(1));
         }

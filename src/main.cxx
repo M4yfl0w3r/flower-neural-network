@@ -25,4 +25,8 @@ auto main() -> int
     const auto accValue  = Loss::accuracy(o2, col);
 
     std::cout << "Loss = " << lossValue << " | Accuracy = " << accValue * 100 << "%\n";
+
+    auto o3  = loss.backward(o2);
+
+    std::cout << "Loss backward output = " << o3 << '\n';
 }

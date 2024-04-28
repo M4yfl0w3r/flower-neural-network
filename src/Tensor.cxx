@@ -16,6 +16,10 @@ public:
     {
     }
 
+    constexpr Tensor(Type value) {
+        fill(value);
+    }
+
     [[nodiscard]] constexpr auto at(std::size_t x, std::size_t y) const { 
         return m_data.at(x).at(y);
     }

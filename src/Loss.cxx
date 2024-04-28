@@ -6,14 +6,14 @@ import config;
 
 export module loss;
 
-export namespace Loss 
+namespace Loss 
 {
     enum class Loss
     {
         CategoricalCrossEntropy
     };
 
-    inline constexpr auto oneHotEncoding = []<typename T, std::size_t R, std::size_t C>(const auto& labels) {
+    static constexpr auto oneHotEncoding = []<typename T, std::size_t R, std::size_t C>(const auto& labels) {
         auto result = Tensor<T, R, C>{ 0 };
 
         // TODO: views::to?
@@ -24,7 +24,7 @@ export namespace Loss
         return result;
     };
 
-    [[nodiscard]] constexpr auto accuracy(const auto& input, const auto& labels) {
+    export [[nodiscard]] constexpr auto accuracy(const auto& input, const auto& labels) {
         const auto rows = labels.shape().first;
         auto maxIndices = std::vector<std::size_t>{};
 
@@ -44,7 +44,7 @@ export namespace Loss
         return correctPredictions / rows;
     }
 
-    template <typename Type, std::size_t Rows, std::size_t Cols>
+    export template <typename Type, std::size_t Rows, std::size_t Cols>
     class CategoricalCrossEntropy final
     {
         using Inputs = Tensor<Type, Rows, Cols>;

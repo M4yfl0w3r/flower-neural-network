@@ -13,8 +13,7 @@ public:
     
     constexpr Tensor(std::array<std::array<Type, Cols>, Rows> data)
         : m_data{ data }
-    {
-    }
+    {}
 
     constexpr Tensor(Type value) {
         fill(value);
@@ -26,11 +25,6 @@ public:
         
     [[nodiscard]] constexpr auto data() const { 
         return m_data;
-    }
-
-    constexpr auto forEachElement(std::function<void(Type&)> func) {
-        for (auto& row : m_data) 
-            std::ranges::for_each(row, func);
     }
 
     // TODO: Rewrite
@@ -63,6 +57,19 @@ public:
 
     [[nodiscard]] constexpr auto shape() const {
         return std::pair { Rows, Cols };
+    }
+
+    [[nodiscard]] constexpr auto rows() const {
+        return Rows;
+    }
+    
+    [[nodiscard]] constexpr auto cols() const {
+        return Cols;
+    }
+
+    constexpr auto forEachElement(std::function<void(Type&)> func) {
+        for (auto& row : m_data) 
+            std::ranges::for_each(row, func);
     }
 
     constexpr auto log() { 
@@ -102,6 +109,10 @@ public:
             }
             std::cout << '\n';
         }
+    }
+
+    auto printShape() const {
+        std::cout << "Shape = " << Rows << ", " << Cols << '\n';
     }
         
     friend auto& operator<< (std::ostream& stream, const Tensor& tensor) {
@@ -180,4 +191,18 @@ export template<typename T, std::size_t RowsA, std::size_t ColsA,
         result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });
         return result;
     }
+}
+
+// TODO: Create a namespace for it?
+export template<typename T, std::size_t Rows, std::size_t Cols>
+[[nodiscard]] inline constexpr auto transpose(const Tensor<T, Rows, Cols>& tensor) {
+    std::array<std::array<T, Rows>, Cols> result{};
+
+    for (auto i = 0u; i < Cols; ++i) {
+        for (auto j = 0u; j < Rows; ++j) {
+            result.at(i).at(j) = tensor.at(j, i);
+        }
+    }
+
+    return Tensor<T, Cols, Rows>(result);
 }

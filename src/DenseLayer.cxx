@@ -11,7 +11,7 @@ export enum class Activation
     Softmax
 };
 
-export template <typename Type, std::size_t Inputs, std::size_t Neurons>
+export template<typename Type, std::size_t Inputs, std::size_t Neurons>
 class DenseLayer final
 {
 public:
@@ -24,6 +24,8 @@ public:
         m_weights.fillWithRandomValues({ 0.0f, 1.0f });
         m_biases.fillWithRandomValues({ 0.0f, 1.0f });
     }
+
+    constexpr auto weights() const { return m_weights; }
 
     [[nodiscard]] constexpr auto forward(const Tensor<Type, 1, Inputs>& input) {
         m_forwardInput  = input;
@@ -44,8 +46,10 @@ public:
         return m_forwardOutput;
     }
 
-    [[nodiscard]] constexpr auto backward(const Tensor<Type, 1, Inputs>& gradients) {
-        const auto result = gradients * m_weights;
+    template<std::size_t GradRows, std::size_t GradCols>
+    [[nodiscard]] constexpr auto backward(const Tensor<Type, GradRows, GradCols>& gradients) {
+        const auto transposedWeights = transpose(m_weights);
+        const auto result = gradients * transposedWeights;
         return result;
     }
 

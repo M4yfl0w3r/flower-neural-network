@@ -5,17 +5,23 @@ import utilities;
 
 export module tensor;
 
-export template<typename Type, std::size_t Rows, std::size_t Cols>
-class Tensor final 
+export struct TensorParams 
+{
+    std::size_t Rows;
+    std::size_t Cols;
+};
+
+export template<typename T, TensorParams params>
+class Tensor final
 {
 public:
     constexpr Tensor() = default;
     
-    constexpr Tensor(std::array<std::array<Type, Cols>, Rows> data)
+    constexpr Tensor(std::array<std::array<T, params.Cols>, params.Rows> data)
         : m_data{ data }
     {}
 
-    constexpr Tensor(Type value) {
+    constexpr Tensor(T value) {
         fill(value);
     }
 
@@ -29,20 +35,18 @@ public:
 
     // TODO: Rewrite
     [[nodiscard]] constexpr auto mean() const {
-        auto sum = Type{};
-
+        auto sum = T{};
         for (const auto& row : m_data) {
-            sum += std::accumulate(std::begin(row), std::end(row), Type{});
+            sum += std::accumulate(std::begin(row), std::end(row), T{});
         }
 
-        return Tensor1D(sum / (Rows * Cols));
+        return Tensor1D(sum / (params.Rows * params.Cols));
     }
     
     [[nodiscard]] constexpr auto sum() const {
-        auto sum = Type{};
-
+        auto sum = T{};
         for (const auto& row : m_data) {
-            sum += std::accumulate(std::begin(row), std::end(row), Type{});
+            sum += std::accumulate(std::begin(row), std::end(row), T{});
         }
 
         return Tensor1D(sum);
@@ -50,24 +54,16 @@ public:
         
     [[nodiscard]] constexpr auto exp() {
         // TODO: Do not use forEachElement
-        auto result = Tensor<Type, Rows, Cols>(m_data);
+        auto result = Tensor<T, params>(m_data);
         result.forEachElement([](auto& el){ el = std::exp(el); });
         return result;
     }
 
     [[nodiscard]] constexpr auto shape() const {
-        return std::pair { Rows, Cols };
+        return std::pair { params.Rows, params.Cols };
     }
 
-    [[nodiscard]] constexpr auto rows() const {
-        return Rows;
-    }
-    
-    [[nodiscard]] constexpr auto cols() const {
-        return Cols;
-    }
-
-    constexpr auto forEachElement(std::function<void(Type&)> func) {
+    constexpr auto forEachElement(std::function<void(T&)> func) {
         for (auto& row : m_data) 
             std::ranges::for_each(row, func);
     }
@@ -76,11 +72,11 @@ public:
         forEachElement([=](auto& el){ el = std::log(el); }); 
     }
 
-    constexpr auto clip(Type min, Type max)  { 
+    constexpr auto clip(T min, T max)  { 
         forEachElement([=](auto& el){ el = std::clamp(el, min, max); }); 
     }
         
-    constexpr auto fillAt(std::size_t i, std::size_t j, Type value) { 
+    constexpr auto fillAt(std::size_t i, std::size_t j, T value) { 
         m_data.at(i).at(j) = value; 
     }
 
@@ -88,15 +84,15 @@ public:
         forEachElement([](auto& el){ el = -el;}); 
     }
 
-    constexpr auto fill(Type value) {
+    constexpr auto fill(T value) {
         std::ranges::for_each(m_data, [=](auto& row) { std::ranges::fill(row, value); });
     }
     
     constexpr auto relu() {
-        forEachElement( [](auto& el){ el = std::max(Type{}, el); });
+        forEachElement( [](auto& el){ el = std::max(T{}, el); });
     }
 
-    auto fillWithRandomValues(std::pair<Type, Type> range) -> void {
+    auto fillWithRandomValues(std::pair<T, T> range) -> void {
         std::ranges::for_each(m_data, [=](auto& row) { 
             std::ranges::generate(row, [&](){ return Utilities::randomNumber(range); } );
         });
@@ -112,11 +108,11 @@ public:
     }
 
     auto printShape() const {
-        std::cout << "Shape = " << Rows << ", " << Cols << '\n';
+        std::cout << "Shape = " << params.Rows << ", " << params.Cols << '\n';
     }
         
     friend auto& operator<< (std::ostream& stream, const Tensor& tensor) {
-        if constexpr (Rows == 1 && Cols == 1) {
+        if constexpr (params.Rows == 1 && params.Cols == 1) {
             stream << tensor.at(0, 0);
         }
         else {
@@ -133,39 +129,36 @@ public:
 
 private:
     constexpr auto Tensor1D(auto value) const {
-        return Tensor<Type, 1u, 1u>(std::array<std::array<Type, 1u>, 1u>({ value }));
+        return Tensor<T, TensorParams{ 1u, 1u }>(std::array<std::array<T, 1u>, 1u>({ value }));
     }
 
-    std::array<std::array<Type, Cols>, Rows> m_data;
+    std::array<std::array<T, params.Cols>, params.Rows> m_data;
 };
 
-export template <typename T, std::size_t Rows, std::size_t Cols>
-[[nodiscard]] constexpr auto operator+ (const Tensor<T, Rows, Cols>& one,
-                                        const Tensor<T, Rows, Cols>& other)
+export template <typename T, TensorParams params>
+[[nodiscard]] constexpr auto operator+ (const Tensor<T, params>& one, const Tensor<T, params>& other)
 {
-    auto result = Tensor<T, Rows, Cols>{};
+    auto result = Tensor<T, params>{};
 
-    for (auto i = 0u; i < Rows; ++i)
-        for (auto j = 0u; j < Cols; ++j)
+    for (auto i = 0u; i < params.Rows; ++i)
+        for (auto j = 0u; j < params.Cols; ++j)
             result.fillAt(i, j, one.at(i, j) + other.at(i, j));
 
     return result;
 }
 
-export template<typename T, std::size_t RowsA, std::size_t ColsA, 
-                             std::size_t RowsB, std::size_t ColsB>
-[[nodiscard]] constexpr auto operator* (const Tensor<T, RowsA, ColsA>& one,
-                                        const Tensor<T, RowsB, ColsB>& other) 
+export template<typename T, TensorParams a, TensorParams b>
+[[nodiscard]] constexpr auto operator* (const Tensor<T, a>& one, const Tensor<T, b>& other) 
 {
-    static_assert(ColsA == RowsB);
+    static_assert(a.Cols == b.Rows);
 
-    auto result = Tensor<T, RowsA, ColsB>{};
+    auto result = Tensor<T, TensorParams{ a.Rows, b.Cols } >{};
 
     // TODO: Strassen algorithm
-    for (auto i = 0u; i < RowsA; ++i) {
-        for (auto j = 0u; j < ColsB; ++j) {
+    for (auto i = 0u; i < a.Rows; ++i) {
+        for (auto j = 0u; j < b.Cols; ++j) {
             T sum{};
-            for (auto k = 0u; k < ColsA; ++k)
+            for (auto k = 0u; k < a.Cols; ++k)
                 sum += one.at(i, k) * other.at(k, j);
             result.fillAt(i, j, sum);
         }
@@ -174,18 +167,16 @@ export template<typename T, std::size_t RowsA, std::size_t ColsA,
     return result;
 }
 
-export template<typename T, std::size_t RowsA, std::size_t ColsA, 
-                            std::size_t RowsB, std::size_t ColsB>
-[[nodiscard]] constexpr auto operator/ (const Tensor<T, RowsA, ColsA>& one, 
-                                        const Tensor<T, RowsB, ColsB>& other)
+export template<typename T, TensorParams a, TensorParams b>
+[[nodiscard]] constexpr auto operator/ (const Tensor<T, a>& one, const Tensor<T, b>& other)
 {
-    if constexpr (RowsB == 1 && ColsB == 1) {
+    if constexpr (b.Rows == 1 && b.Cols == 1) {
         auto result = one;
         result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });
         return result;
     }
 
-    if constexpr (RowsA == 1 && RowsB == 1 && ColsA == ColsB) {
+    if constexpr (a.Rows == 1 && b.Rows == 1 && a.Cols == b.Cols) {
         // TODO: Better ifs
         auto result = one;
         result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });
@@ -194,15 +185,15 @@ export template<typename T, std::size_t RowsA, std::size_t ColsA,
 }
 
 // TODO: Create a namespace for it?
-export template<typename T, std::size_t Rows, std::size_t Cols>
-[[nodiscard]] inline constexpr auto transpose(const Tensor<T, Rows, Cols>& tensor) {
-    std::array<std::array<T, Rows>, Cols> result{};
+export template<typename T, TensorParams params>
+[[nodiscard]] inline constexpr auto transpose(const Tensor<T, params>& tensor) {
+    std::array<std::array<T, params.Rows>, params.Cols> result{};
 
-    for (auto i = 0u; i < Cols; ++i) {
-        for (auto j = 0u; j < Rows; ++j) {
+    for (auto i = 0u; i < params.Cols; ++i) {
+        for (auto j = 0u; j < params.Rows; ++j) {
             result.at(i).at(j) = tensor.at(j, i);
         }
     }
 
-    return Tensor<T, Cols, Rows>(result);
+    return Tensor<T, TensorParams{ params.Cols, params.Rows }>(result);
 }

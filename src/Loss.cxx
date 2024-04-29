@@ -14,7 +14,7 @@ namespace Loss
     };
 
     static constexpr auto oneHotEncoding = []<typename T, std::size_t R, std::size_t C>(const auto& labels) {
-        auto result = Tensor<T, R, C>{ T{} };
+        auto result = Tensor<T, TensorParams{ R, C }>{ T{} };
 
         for (auto i = 0u; i < R; ++i) {
             result.fillAt(i, labels.at(i, 0u), static_cast<T>(1));
@@ -46,13 +46,13 @@ namespace Loss
     export template <typename Type, std::size_t Rows, std::size_t Cols>
     class CategoricalCrossEntropy final
     {
-        using Inputs = Tensor<Type, Rows, Cols>;
-        using Labels = Tensor<std::size_t, Rows, 1u>;
+        using Inputs = Tensor<Type, TensorParams{ Rows, Cols }>;
+        using Labels = Tensor<std::size_t, TensorParams{ Rows, 1u }>;
 
     public:
         [[nodiscard]] constexpr auto value(const Inputs& predictions, const Labels& trueLabels) {
             m_trueLabels     = trueLabels;
-            auto confidences = Tensor<Type, Rows, 1u>{};
+            auto confidences = Tensor<Type, TensorParams{ Rows, 1u }>{};
 
             for (auto i = 0u; auto& row : predictions.data()) {
                 confidences.fillAt(i, 0u, row.at(trueLabels.at(i, 0u)));

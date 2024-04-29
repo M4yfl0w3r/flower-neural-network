@@ -24,15 +24,15 @@ public:
     explicit constexpr DenseLayer(Activation activation) 
         : m_activation{activation} 
     {
-        m_weights = Tensor<float, params.Inputs, params.Neurons>();
-        m_biases  = Tensor<float, 1, params.Neurons>();
+        m_weights = Tensor<float, TensorParams{ params.Inputs, params.Neurons } >();
+        m_biases  = Tensor<float, TensorParams{ 1, params.Neurons } >();
 
         m_weights.fillWithRandomValues({ 0.0f, 1.0f });
         m_biases.fillWithRandomValues({ 0.0f, 1.0f });
     }
 
     template<LayerParams prevLayerParams>
-    [[nodiscard]] constexpr auto forward(const Tensor<float, prevLayerParams.Inputs, prevLayerParams.Neurons>& input) {
+    [[nodiscard]] constexpr auto forward(const Tensor<float, TensorParams{ prevLayerParams.Inputs, prevLayerParams.Neurons }>& input) {
         m_forwardInput  = input;
         m_forwardOutput = (m_forwardInput * m_weights) + m_biases;
 
@@ -52,7 +52,7 @@ public:
     }
 
     template<LayerParams nextLayerParams>
-    [[nodiscard]] constexpr auto backward(const Tensor<float, nextLayerParams.Inputs, nextLayerParams.Neurons>& gradients) {
+    [[nodiscard]] constexpr auto backward(const Tensor<float, TensorParams{ nextLayerParams.Inputs, nextLayerParams.Neurons} >& gradients) {
         const auto transposedWeights = transpose(m_weights);
         const auto result = gradients * transposedWeights;
         return result;
@@ -61,8 +61,8 @@ public:
 private:
     const Activation  m_activation;
 
-    Tensor<float, 1, params.Inputs>              m_forwardInput;
-    Tensor<float, 1, params.Neurons>             m_forwardOutput;
-    Tensor<float, params.Inputs, params.Neurons> m_weights;
-    Tensor<float, 1, params.Neurons>             m_biases;
+    Tensor<float, TensorParams{ 1, params.Inputs }>              m_forwardInput;
+    Tensor<float, TensorParams{ 1, params.Neurons }>             m_forwardOutput;
+    Tensor<float, TensorParams{ params.Inputs, params.Neurons }> m_weights;
+    Tensor<float, TensorParams{ 1, params.Neurons }>             m_biases;
 };

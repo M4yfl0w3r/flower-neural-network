@@ -11,8 +11,12 @@ auto main() -> int
 
     const auto& [data, labels] = Dataset::readFile(Config::irisPath);
     
-    auto row  = Tensor<float, 1u, 4u>{ { data.at(0) } };
-    auto col  = Tensor<std::size_t, 1u, 1u>{ {{ labels.at(0).at(0) }} };
+    static constexpr auto rowTensorParams = TensorParams{ .Rows = 1u, .Cols = 4u };
+    static constexpr auto colTensorParams = TensorParams{ .Rows = 1u, .Cols = 1u };
+
+    auto row  = Tensor<float, rowTensorParams>{ { data.at(0) } };
+    auto col  = Tensor<std::size_t, colTensorParams>{ {{ labels.at(0).at(0) }} };
+
     auto loss = Loss::CategoricalCrossEntropy<float, 1u, 3u>();
 
     static constexpr auto inputLayerParams = LayerParams{ .Inputs = 1u, .Neurons = 4u };
@@ -28,7 +32,6 @@ auto main() -> int
     static constexpr auto firstLayerOutputParams = LayerParams{ .Inputs = 1u, .Neurons = 3u };
 
     auto o2 = nd.forward<firstLayerOutputParams>(o1);
-
 
     const auto lossValue = loss.value(o2, col);
     const auto accValue  = Loss::accuracy(o2, col);

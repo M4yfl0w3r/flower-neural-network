@@ -28,30 +28,23 @@ auto main() -> int
 
     auto loss = Loss::CategoricalCrossEntropy();
 
-    static constexpr auto inputLayerParams = LayerParams{ .Inputs = 1u, .Neurons = 4u };
-    static constexpr auto stLayerParams    = LayerParams{ .Inputs = 4u, .Neurons = 3u };
-    static constexpr auto ndLayerParams    = LayerParams{ .Inputs = 3u, .Neurons = 3u };
-    static constexpr auto lossLayerParams  = LayerParams{ .Inputs = 1u, .Neurons = 3u };
-
-    auto st = DenseLayer<stLayerParams>{ Activation::ReLU };
-    auto nd = DenseLayer<ndLayerParams>{ Activation::Softmax };
+    auto st = DenseLayer< LayerParams{ .Inputs = 4uz, .Neurons = 3uz } >{ Activation::ReLU };
+    auto nd = DenseLayer< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >{ Activation::Softmax };
     
-    static constexpr auto stLayerOutputParams = LayerParams{ .Inputs = 1u, .Neurons = 3u };
-    static constexpr auto ndLayerOutputParams = LayerParams{ .Inputs = 1u, .Neurons = 3u };
-
-    for (auto i = 0u; i < Config::epochs; ++i) {
-        auto o1 = st.forward<inputLayerParams>(rows);
-        auto o2 = nd.forward<stLayerOutputParams>(o1);
+    for (auto i = 0uz; i < Config::epochs; ++i) {
+        
+        auto o1 = st.forward< LayerParams{ .Inputs = 1uz, .Neurons = 4uz } >(rows);
+        auto o2 = nd.forward< LayerParams{ .Inputs = 1uz, .Neurons = 3uz } >(o1);
 
 
-        const auto lossValue = loss.forward<ndLayerOutputParams>(o2, cols);
+        const auto lossValue = loss.forward< LayerParams{ .Inputs = 1uz, .Neurons = 3uz } >(o2, cols);
         const auto accValue  = Loss::accuracy(o2, cols);
         std::cout << "Loss = " << lossValue << " | Accuracy = " << accValue * 100 << "%\n";
 
 
-        auto o3 = loss.backward<ndLayerOutputParams>(o2);
-        auto o4 = nd.backward<lossLayerParams>(o3);
-        auto o5 = st.backward<stLayerOutputParams>(o4);
+        auto o3 = loss.backward< LayerParams{ .Inputs = 1uz, .Neurons = 3uz } >(o2);
+        auto o4 = nd.backward<   LayerParams{ .Inputs = 1uz, .Neurons = 3uz } >(o3);
+        auto o5 = st.backward<   LayerParams{ .Inputs = 1uz, .Neurons = 3uz } >(o4);
 
         st.update(Config::learningRate);
         nd.update(Config::learningRate);

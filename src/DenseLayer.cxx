@@ -25,7 +25,7 @@ public:
         : m_activation{activation}
     {
         m_weights = Tensor<float, TensorParams{ params.Inputs, params.Neurons } >();
-        m_biases  = Tensor<float, TensorParams{ 1, params.Neurons } >();
+        m_biases  = Tensor<float, TensorParams{ 1uz, params.Neurons } >();
 
         m_weights.fillWithRandomValues({ 0.0f, 1.0f });
         m_biases.fillWithRandomValues({ 0.0f, 1.0f });
@@ -75,7 +75,7 @@ public:
 private:
     const Activation  m_activation;
 
-    Tensor<float, TensorParams{ 1, params.Neurons }>             m_forwardOutput;
+    Tensor<float, TensorParams{ 1uz, params.Neurons }>             m_forwardOutput;
     Tensor<float, TensorParams{ params.Inputs, params.Neurons }> m_weights;
-    Tensor<float, TensorParams{ 1, params.Neurons }>             m_biases;
+    Tensor<float, TensorParams{ 1uz, params.Neurons }>             m_biases;
 };

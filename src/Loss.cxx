@@ -17,8 +17,8 @@ namespace Loss
     static constexpr auto oneHotEncoding = []<std::size_t R, std::size_t C>(const auto& labels) {
         auto result = Tensor<float, TensorParams{ R, C }>{ 0.0f };
 
-        for (auto i = 0u; i < R; ++i) {
-            result.fillAt(i, labels.at(i, 0u), 1.0f);
+        for (auto i = 0uz; i < R; ++i) {
+            result.fillAt(i, labels.at(i, 0uz), 1.0f);
         }
 
         return result;
@@ -33,7 +33,7 @@ namespace Loss
             maxIndices.push_back(static_cast<std::size_t>(std::ranges::distance(std::begin(row), std::ranges::max_element(row))));
         }
 
-        auto correctPredictions = 0u;
+        auto correctPredictions = 0uz;
 
         for (auto i = 0u; const auto& arg : maxIndices) {
             if (arg == labels.at(i, 0u))
@@ -50,14 +50,14 @@ namespace Loss
         template<LayerParams prevLayer>
         [[nodiscard]] constexpr auto forward(
             const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& predictions, 
-            const Tensor<std::size_t, TensorParams{ prevLayer.Inputs, 1u }>& trueLabels
+            const Tensor<std::size_t, TensorParams{ prevLayer.Inputs, 1uz }>& trueLabels
         )
         {
             m_trueLabels     = trueLabels;
-            auto confidences = Tensor<float, TensorParams{ prevLayer.Inputs, 1u }>{};
+            auto confidences = Tensor<float, TensorParams{ prevLayer.Inputs, 1uz }>{};
 
-            for (auto i = 0u; auto& row : predictions.data()) {
-                confidences.fillAt(i, 0u, row.at(trueLabels.at(i, 0u)));
+            for (auto i = 0uz; auto& row : predictions.data()) {
+                confidences.fillAt(i, 0uz, row.at(trueLabels.at(i, 0uz)));
             }
 
             // Clip to prevent log(0.0)
@@ -72,14 +72,14 @@ namespace Loss
             const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>& gradients
         ) 
         {
-            auto labels = oneHotEncoding.operator()<1, Mayflower::Config::numClasses>(m_trueLabels);
+            auto labels = oneHotEncoding.operator()<1uz, Mayflower::Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
             output.negative(); // TODO: Add - operator to the Tensor class
             return output;
         }
 
     private:
-        Tensor<std::size_t, TensorParams{ 1u, 1u }> m_trueLabels;
+        Tensor<std::size_t, TensorParams{ 1uz, 1uz }> m_trueLabels;
     };
 }
 

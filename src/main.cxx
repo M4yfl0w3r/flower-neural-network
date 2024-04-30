@@ -11,8 +11,8 @@ auto main() -> int
 
     const auto& [data, labels] = Dataset::readFile(Config::irisPath);
     
-    static constexpr auto rowTensorParams = TensorParams{ .Rows = 1u, .Cols = 4u };
-    static constexpr auto colTensorParams = TensorParams{ .Rows = 1u, .Cols = 1u };
+    static constexpr auto rowTensorParams = TensorParams{ .Rows = 1uz, .Cols = 4uz };
+    static constexpr auto colTensorParams = TensorParams{ .Rows = 1uz, .Cols = 1uz };
 
     std::array<std::array<float, 4u>, 1u> batchRows { data.at(0) };
     std::array<std::array<std::size_t, 1u>, 1u> batchCols { {{ labels.at(0).at(0) }} };

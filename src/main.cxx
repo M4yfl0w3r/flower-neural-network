@@ -14,10 +14,19 @@ auto main() -> int
     static constexpr auto rowTensorParams = TensorParams{ .Rows = 1u, .Cols = 4u };
     static constexpr auto colTensorParams = TensorParams{ .Rows = 1u, .Cols = 1u };
 
-    auto row  = Tensor<float, rowTensorParams>{ { data.at(0) } };
-    auto col  = Tensor<std::size_t, colTensorParams>{ {{ labels.at(0).at(0) }} };
+    std::array<std::array<float, 4u>, 1u> batchRows { data.at(0) };
+    std::array<std::array<std::size_t, 1u>, 1u> batchCols { {{ labels.at(0).at(0) }} };
+    
+    // std::array<std::array<float, 4u>, 3u> batchRows { data.at(0), data.at(54), data.at(119) };
+    // std::array<std::array<std::size_t, 1u>, 3u> batchCols { labels.at(0), labels.at(54), labels.at(119) };
 
-    auto loss = Loss::CategoricalCrossEntropy<float, 1u, 3u>();
+    auto rows = Tensor<float, rowTensorParams>{ batchRows };
+    auto cols = Tensor<std::size_t, colTensorParams>{ batchCols };
+
+    // rows.print();
+    // cols.print();
+
+    auto loss = Loss::CategoricalCrossEntropy<float>();
 
     static constexpr auto inputLayerParams = LayerParams{ .Inputs = 1u, .Neurons = 4u };
     static constexpr auto stLayerParams    = LayerParams{ .Inputs = 4u, .Neurons = 3u };
@@ -26,23 +35,25 @@ auto main() -> int
 
     auto st = DenseLayer<stLayerParams>{ Activation::ReLU };
     auto nd = DenseLayer<ndLayerParams>{ Activation::Softmax };
+    
+    static constexpr auto stLayerOutputParams = LayerParams{ .Inputs = 1u, .Neurons = 3u };
+    static constexpr auto ndLayerOutputParams = LayerParams{ .Inputs = 1u, .Neurons = 3u };
 
-    auto o1 = st.forward<inputLayerParams>(row);
+    for (auto i = 0u; i < Config::epochs; ++i) {
+        auto o1 = st.forward<inputLayerParams>(rows);
+        auto o2 = nd.forward<stLayerOutputParams>(o1);
 
-    static constexpr auto firstLayerOutputParams = LayerParams{ .Inputs = 1u, .Neurons = 3u };
 
-    auto o2 = nd.forward<firstLayerOutputParams>(o1);
+        const auto lossValue = loss.forward<ndLayerOutputParams>(o2, cols);
+        const auto accValue  = Loss::accuracy(o2, cols);
+        std::cout << "Loss = " << lossValue << " | Accuracy = " << accValue * 100 << "%\n";
 
-    const auto lossValue = loss.value(o2, col);
-    const auto accValue  = Loss::accuracy(o2, col);
-    std::cout << "Loss = " << lossValue << " | Accuracy = " << accValue * 100 << "%\n";
 
-    auto o3 = loss.backward(o2);
-    std::cout << "Loss backward output = " << o3 << '\n';
+        auto o3 = loss.backward<ndLayerOutputParams>(o2);
+        auto o4 = nd.backward<lossLayerParams>(o3);
+        auto o5 = st.backward<stLayerOutputParams>(o4);
 
-    auto o4 = nd.backward<lossLayerParams>(o3);
-    std::cout << "2nd backward output = " << o4 << '\n';
-
-    auto o5 = st.backward<firstLayerOutputParams>(o4);
-    std::cout << "1st backward output = " << o5 << '\n';
+        st.update(Config::learningRate);
+        nd.update(Config::learningRate);
+    }
 }

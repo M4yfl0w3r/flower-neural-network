@@ -1,4 +1,2 @@
-Neural network implementation
+Neural network implementation using modules.
 
-TODO
-- std::vector of std::variant of layers

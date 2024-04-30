@@ -3,6 +3,7 @@ module;
 import std;
 import tensor;
 import config;
+import dense_layer;
 
 export module loss;
 
@@ -43,29 +44,36 @@ namespace Loss
         return correctPredictions / rows;
     }
 
-    export template <typename Type, std::size_t Rows, std::size_t Cols>
+    // That's bad, will change it for sure
+    export template<typename T>
     class CategoricalCrossEntropy final
     {
-        using Inputs = Tensor<Type, TensorParams{ Rows, Cols }>;
-        using Labels = Tensor<std::size_t, TensorParams{ Rows, 1u }>;
-
     public:
-        [[nodiscard]] constexpr auto value(const Inputs& predictions, const Labels& trueLabels) {
+        template<LayerParams prevLayer>
+        [[nodiscard]] constexpr auto forward(
+            const Tensor<T, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& predictions, 
+            const Tensor<std::size_t, TensorParams{ prevLayer.Inputs, 1u }>& trueLabels
+        )
+        {
             m_trueLabels     = trueLabels;
-            auto confidences = Tensor<Type, TensorParams{ Rows, 1u }>{};
+            auto confidences = Tensor<T, TensorParams{ prevLayer.Inputs, 1u }>{};
 
             for (auto i = 0u; auto& row : predictions.data()) {
                 confidences.fillAt(i, 0u, row.at(trueLabels.at(i, 0u)));
             }
 
             // Clip to prevent log(0.0)
-            confidences.clip(std::numeric_limits<Type>::min(), 1 - std::numeric_limits<Type>::min());
+            confidences.clip(std::numeric_limits<T>::min(), 1 - std::numeric_limits<T>::min());
             confidences.log();
             confidences.negative();
             return confidences.mean();
         }
 
-        [[nodiscard]] constexpr auto backward(const Inputs& gradients) {
+        template<LayerParams nextLayer>
+        [[nodiscard]] constexpr auto backward(
+            const Tensor<T, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>& gradients
+        ) 
+        {
             auto labels = oneHotEncoding.operator()<float, 1, Mayflower::Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
             output.negative(); // TODO: Add - operator to the Tensor class
@@ -73,7 +81,7 @@ namespace Loss
         }
 
     private:
-        Labels m_trueLabels;
+        Tensor<std::size_t, TensorParams{ 1u, 1u }> m_trueLabels;
     };
 }
 

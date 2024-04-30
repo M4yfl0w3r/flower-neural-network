@@ -69,7 +69,7 @@ public:
     }
 
     constexpr auto log() { 
-        forEachElement([=](auto& el){ el = std::log(el); }); 
+        forEachElement([](auto& el){ el = std::log(el); }); 
     }
 
     constexpr auto clip(T min, T max)  { 

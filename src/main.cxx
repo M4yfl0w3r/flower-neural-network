@@ -26,7 +26,7 @@ auto main() -> int
     // rows.print();
     // cols.print();
 
-    auto loss = Loss::CategoricalCrossEntropy<float>();
+    auto loss = Loss::CategoricalCrossEntropy();
 
     static constexpr auto inputLayerParams = LayerParams{ .Inputs = 1u, .Neurons = 4u };
     static constexpr auto stLayerParams    = LayerParams{ .Inputs = 4u, .Neurons = 3u };

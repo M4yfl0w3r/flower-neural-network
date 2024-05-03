@@ -43,29 +43,29 @@ public:
     template<LayerParams prevLayer>
     [[nodiscard]] constexpr auto forward(
         const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input
-    )
+    ) const
     {
-        m_forwardOutput = (input * m_weights) + m_biases;
+        auto output = (input * m_weights) + m_biases;
 
         switch (m_activation) {
             case Activation::ReLU:
-                m_forwardOutput.relu();
+                output.relu();
                 break;
             
             case Activation::Softmax:
-                const auto expValues    = m_forwardOutput.exp();
+                const auto expValues    = output.exp();
                 const auto expValuesSum = expValues.sum();
-                m_forwardOutput = expValues / expValuesSum;
+                output = expValues / expValuesSum;
                 break;
         }
 
-        return m_forwardOutput;
+        return output;
     }
 
     template<LayerParams nextLayer>
     [[nodiscard]] constexpr auto backward(
         const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
-    ) 
+    ) const
     {
         const auto transposedWeights = transpose(m_weights);
         const auto result = gradients * transposedWeights;
@@ -75,7 +75,6 @@ public:
 private:
     const Activation  m_activation;
 
-    Tensor<float, TensorParams{ 1uz, params.Neurons }>             m_forwardOutput;
     Tensor<float, TensorParams{ params.Inputs, params.Neurons }> m_weights;
-    Tensor<float, TensorParams{ 1uz, params.Neurons }>             m_biases;
+    Tensor<float, TensorParams{ 1uz, params.Neurons }>           m_biases;
 };

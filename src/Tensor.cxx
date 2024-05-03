@@ -112,8 +112,8 @@ public:
     }
         
     friend auto& operator<< (std::ostream& stream, const Tensor& tensor) {
-        if constexpr (params.Rows == 1 && params.Cols == 1) {
-            stream << tensor.at(0, 0);
+        if constexpr (params.Rows == 1uz && params.Cols == 1uz) {
+            stream << tensor.at(0uz, 0uz);
         }
         else {
             for (const auto& row : tensor.data()) {
@@ -129,36 +129,61 @@ public:
 
 private:
     constexpr auto Tensor1D(auto value) const {
-        return Tensor<T, TensorParams{ 1u, 1u }>(std::array<std::array<T, 1u>, 1u>({ value }));
+        return Tensor<T, TensorParams{ 1uz, 1uz }>(std::array<std::array<T, 1uz>, 1uz>({ value }));
     }
 
     std::array<std::array<T, params.Cols>, params.Rows> m_data;
 };
 
-export template <typename T, TensorParams params>
-[[nodiscard]] constexpr auto operator+ (const Tensor<T, params>& one, const Tensor<T, params>& other)
+// Add tensors of same order
+export template<typename T, TensorParams params>
+[[nodiscard]] constexpr auto operator+ (
+    const Tensor<T, params>& one, 
+    const Tensor<T, params>& other
+)
 {
     auto result = Tensor<T, params>{};
 
-    for (auto i = 0u; i < params.Rows; ++i)
-        for (auto j = 0u; j < params.Cols; ++j)
+    for (auto i = 0uz; i < params.Rows; ++i)
+        for (auto j = 0uz; j < params.Cols; ++j)
             result.fillAt(i, j, one.at(i, j) + other.at(i, j));
 
     return result;
 }
 
+// Add biases to each row
 export template<typename T, TensorParams a, TensorParams b>
-[[nodiscard]] constexpr auto operator* (const Tensor<T, a>& one, const Tensor<T, b>& other) 
+[[nodiscard]] constexpr auto operator+ (
+    const Tensor<T, a>& one,
+    const Tensor<T, b>& other   // Biases
+)
+{
+    static_assert(a.Rows == b.Cols && b.Rows == 1uz);
+
+    auto result = Tensor<T, a>{};
+
+    for (auto i = 0uz; i < a.Rows; ++i)
+        for (auto j = 0uz; j < a.Cols; ++j)
+            result.fillAt(i, j, one.at(i, j) + other.at(0uz, i));
+
+    return result;
+}
+
+export template<typename T, TensorParams a, TensorParams b>
+[[nodiscard]] constexpr auto operator* (
+    const Tensor<T, a>& one, 
+    const Tensor<T, b>& other
+) 
 {
     static_assert(a.Cols == b.Rows);
 
     auto result = Tensor<T, TensorParams{ a.Rows, b.Cols } >{};
 
     // TODO: Strassen algorithm
-    for (auto i = 0u; i < a.Rows; ++i) {
-        for (auto j = 0u; j < b.Cols; ++j) {
+    for (auto i = 0uz; i < a.Rows; ++i) {
+        for (auto j = 0uz; j < b.Cols; ++j) {
             T sum{};
-            for (auto k = 0u; k < a.Cols; ++k)
+            for (auto k = 0uz; k < a.Cols; ++k)
                 sum += one.at(i, k) * other.at(k, j);
             result.fillAt(i, j, sum);
         }
@@ -168,29 +193,35 @@ export template<typename T, TensorParams a, TensorParams b>
 }
 
 export template<typename T, TensorParams a, TensorParams b>
-[[nodiscard]] constexpr auto operator/ (const Tensor<T, a>& one, const Tensor<T, b>& other)
+[[nodiscard]] constexpr auto operator/ (
+    const Tensor<T, a>& one, 
+    const Tensor<T, b>& other
+)
 {
-    if constexpr (b.Rows == 1 && b.Cols == 1) {
+    if constexpr (b.Rows == 1uz && b.Cols == 1uz) {
         auto result = one;
-        result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });
+        result.forEachElement([&other](auto& el){ el /= other.at(0uz, 0uz); });
         return result;
     }
 
-    if constexpr (a.Rows == 1 && b.Rows == 1 && a.Cols == b.Cols) {
+    if constexpr (a.Rows == 1uz && b.Rows == 1uz && a.Cols == b.Cols) {
         // TODO: Better ifs
         auto result = one;
-        result.forEachElement([&other](auto& el){ el /= other.at(0u, 0u); });
+        result.forEachElement([&other](auto& el){ el /= other.at(0uz, 0uz); });
         return result;
     }
 }
 
 // TODO: Create a namespace for it?
 export template<typename T, TensorParams params>
-[[nodiscard]] inline constexpr auto transpose(const Tensor<T, params>& tensor) {
+[[nodiscard]] inline constexpr auto transpose(
+    const Tensor<T, params>& tensor
+) 
+{
     std::array<std::array<T, params.Rows>, params.Cols> result{};
 
-    for (auto i = 0u; i < params.Cols; ++i) {
-        for (auto j = 0u; j < params.Rows; ++j) {
+    for (auto i = 0uz; i < params.Cols; ++i) {
+        for (auto j = 0uz; j < params.Rows; ++j) {
             result.at(i).at(j) = tensor.at(j, i);
         }
     }

@@ -18,18 +18,23 @@ auto main() -> int
     auto cols = Tensor<std::size_t, TensorParams{ .Rows = 3uz, .Cols = 1uz }>{ batchCols };
 
     auto st = DenseLayer< LayerParams{ .Inputs = 4uz, .Neurons = 3uz } >{ Activation::ReLU };
-    auto nd = DenseLayer< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >{ Activation::Softmax };
+    auto nd = DenseLayer< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >{ Activation::ReLU };
     
     auto loss = Loss::CategoricalCrossEntropy();
     
-    auto o1 = st.forward< LayerParams{ .Inputs = 3uz, .Neurons = 4uz } >(rows);
-    auto o2 = nd.forward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o1);
-    
-    const auto lossValue = loss.forward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2, cols);
-    const auto accValue  = Loss::accuracy(o2, cols);
-    std::cout << "Loss = " << lossValue << " | Accuracy = " << accValue * 100 << "%\n";
+    for (auto i = 0uz; i < Config::epochs; ++i) {
+        auto o1 = st.forward< LayerParams{ .Inputs = 3uz, .Neurons = 4uz } >(rows);
+        auto o2 = nd.forward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o1);
+        
+        const auto lossValue = loss.forward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2, cols);
+        const auto accValue  = Loss::accuracy(o2, cols);
+        std::cout << "Loss = " << lossValue << " | Accuracy = " << accValue * 100 << "%\n";
 
-    auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
-    auto o4 = nd.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o3);
-    auto o5 = st.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o4);
+        auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
+        auto o4 = nd.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o3);
+        auto o5 = st.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o4);
+
+        st.update(Config::learningRate);
+        nd.update(Config::learningRate);
+    }
 }

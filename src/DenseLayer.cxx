@@ -32,8 +32,7 @@ public:
     }
 
     constexpr auto update(float learningRate) {
-        m_weights.forEachElement([=](auto& el) { el = -el * learningRate; });
-        m_biases.forEachElement([=](auto& el) { el = -el * learningRate; });
+        // TODO: weights -= learning_rate * weights_grad
     }
 
     constexpr auto printWeights() const {
@@ -47,16 +46,22 @@ public:
     {
         auto output = (input * m_weights) + m_biases;
 
+        using enum Activation;
+
         switch (m_activation) {
-            case Activation::ReLU:
+            case ReLU:
+            {
                 output.relu();
                 break;
+            }
             
-            case Activation::Softmax:
+            case Softmax:
+            {
                 const auto expValues    = output.exp();
                 const auto expValuesSum = expValues.sum();
                 output = expValues / expValuesSum;
                 break;
+            }
         }
 
         return output;
@@ -67,12 +72,27 @@ public:
         const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
     ) const
     {
-        const auto transposedWeights = transpose(m_weights);
-        const auto result = gradients * transposedWeights;
+        const auto weightsT = transpose(m_weights);
+        auto output         = gradients * weightsT;
 
-        // TODO: Add activation derivative
+        using enum Activation;
 
-        return result;
+        switch (m_activation) {
+            using enum Activation;
+
+            case ReLU:
+            {
+                output.forEachElement( [](auto& el){ el <= 0.0f ? el = 0.0f : el; } );
+                break;
+            }
+
+            case Softmax:
+            {
+                break;
+            }
+        }
+
+        return output;
     }
 
 private:

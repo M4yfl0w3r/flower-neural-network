@@ -80,8 +80,8 @@ public:
         m_data.at(i).at(j) = value; 
     }
 
-    constexpr auto negative() { 
-        forEachElement([](auto& el){ el = -el;}); 
+    constexpr auto negative() {
+        forEachElement([](auto& el){ el != T{} ? el = -el : el = T{};}); 
     }
 
     constexpr auto fill(T value) {
@@ -109,6 +109,10 @@ public:
 
     auto printShape() const {
         std::cout << "Shape = " << params.Rows << ", " << params.Cols << '\n';
+    }
+
+    auto operator- () {
+        this->negative();
     }
         
     friend auto& operator<< (std::ostream& stream, const Tensor& tensor) {
@@ -210,6 +214,23 @@ export template<typename T, TensorParams a, TensorParams b>
         result.forEachElement([&other](auto& el){ el /= other.at(0uz, 0uz); });
         return result;
     }
+}
+
+export template<typename T, TensorParams params>
+[[nodiscard]] constexpr auto operator/ (
+    const Tensor<T, params>& one,   // Hot one encoding
+    const Tensor<T, params>& other
+)
+{
+    auto result = Tensor<T, params>{};
+
+    for (auto i = 0uz; i < params.Rows; ++i) {
+        for (auto j = 0uz; j < params.Cols; ++j) {
+            result.fillAt(i, j, one.at(i, j) / other.at(i, j));
+        }
+    }
+
+    return result;
 }
 
 // TODO: Create a namespace for it?

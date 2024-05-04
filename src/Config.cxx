@@ -11,5 +11,6 @@ export namespace Mayflower::Config
     inline constexpr auto numClasses   = 3uz;
     inline constexpr auto learningRate = 0.1f;
     inline constexpr auto epochs       = 2uz;
+    inline constexpr auto batchSize    = 3uz;
 }
 

@@ -69,6 +69,9 @@ public:
     {
         const auto transposedWeights = transpose(m_weights);
         const auto result = gradients * transposedWeights;
+
+        // TODO: Add activation derivative
+
         return result;
     }
 

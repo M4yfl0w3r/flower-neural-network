@@ -35,8 +35,8 @@ namespace Loss
 
         auto correctPredictions = 0uz;
 
-        for (auto i = 0u; const auto& arg : maxIndices) {
-            if (arg == labels.at(i, 0u))
+        for (auto i = 0uz; const auto& arg : maxIndices) {
+            if (arg == labels.at(i, 0uz))
                 ++correctPredictions;
             ++i;
         }
@@ -60,8 +60,10 @@ namespace Loss
                 confidences.fillAt(i, 0uz, row.at(trueLabels.at(i, 0uz)));
             }
 
+            static constexpr auto minFloat = std::numeric_limits<float>::min();
+
             // Clip to prevent log(0.0)
-            confidences.clip(std::numeric_limits<float>::min(), 1 - std::numeric_limits<float>::min());
+            confidences.clip(minFloat, 1.0f - minFloat);
             confidences.log();
             confidences.negative();
             return confidences.mean();
@@ -72,14 +74,15 @@ namespace Loss
             const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>& gradients
         ) 
         {
-            auto labels = oneHotEncoding.operator()<1uz, Mayflower::Config::numClasses>(m_trueLabels);
+            auto labels = oneHotEncoding.operator()<Mayflower::Config::batchSize, 
+                                                    Mayflower::Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
-            output.negative(); // TODO: Add - operator to the Tensor class
+            output.negative();
             return output;
         }
 
     private:
-        Tensor<std::size_t, TensorParams{ 1uz, 1uz }> m_trueLabels;
+        Tensor<std::size_t, TensorParams{ Mayflower::Config::batchSize, 1uz }> m_trueLabels;
     };
 }
 

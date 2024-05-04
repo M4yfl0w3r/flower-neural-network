@@ -30,9 +30,6 @@ auto main() -> int
     std::cout << "Loss = " << lossValue << " | Accuracy = " << accValue * 100 << "%\n";
 
     auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
-
-    std::cout << o3 << '\n';
-
-    // auto o4 = nd.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o3);
-    // auto o5 = st.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o4);
+    auto o4 = nd.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o3);
+    auto o5 = st.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o4);
 }

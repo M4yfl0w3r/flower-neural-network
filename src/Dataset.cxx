@@ -7,8 +7,10 @@ export module dataset;
 
 namespace fs = std::filesystem;
 
-export namespace Dataset {
-    auto readFile(const fs::path& path) {
+export namespace Dataset 
+{
+    auto readFile(const fs::path& path) 
+    {
         using namespace Mayflower;
 
         auto file = std::ifstream{path, std::ios::in | std::ios::binary};

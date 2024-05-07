@@ -53,6 +53,8 @@ namespace Loss
             const Tensor<std::size_t, TensorParams{ prevLayer.Inputs, 1uz }>& trueLabels
         )
         {
+            // TODO: Something is not right here
+            
             m_trueLabels     = trueLabels;
             auto confidences = Tensor<float, TensorParams{ prevLayer.Inputs, 1uz }>{};
 

@@ -8,6 +8,7 @@ import dense_layer;
 auto main() -> int
 {
     using namespace Mayflower;
+    using namespace Loss;
 
     const auto& [data, labels] = Dataset::readFile(Config::irisPath);
 
@@ -36,9 +37,8 @@ auto main() -> int
         auto o2 = nd.forward(o1);
 
         const auto lossValue = loss.forward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2, cols);
-        const auto accValue  = Loss::accuracy(o2, cols);
-        std::cout << "Loss = " << lossValue << " | Accuracy = " << accValue * 100uz << "%\n";
-
+        const auto accValue  = accuracy(&o2, cols);
+        std::cout << std::setprecision(4) << "Loss = " << lossValue << " | Accuracy = " << accValue * 100uz << "%\n";
 
         // auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
         // auto o4 = nd.backward(o3);

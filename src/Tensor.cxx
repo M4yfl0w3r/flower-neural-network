@@ -75,14 +75,26 @@ public:
     }
         
     [[nodiscard]] constexpr auto exp() {
-        // TODO: Do not use forEachElement
-        auto result = Tensor<T, params>(m_data);
-        result.forEachElement([](auto& el){ el = std::exp(el); });
+        auto result = Tensor<T, params>{m_data};
+        result.forEachElement( [](auto& el){ el = std::exp(el); });
         return result;
     }
 
     [[nodiscard]] constexpr auto shape() const {
         return std::pair { params.Rows, params.Cols };
+    }
+
+    [[nodiscard]] constexpr auto argMax() const {
+        auto result = Tensor<T, TensorParams{params.Rows, 1uz}>{};
+
+        for (auto i = 0uz; const auto& row : m_data) {
+            auto max = std::ranges::max_element(row);
+            auto arg = std::ranges::distance(std::begin(row), max);
+            result.fillAt(i, 0uz, arg);
+            ++i;
+        }
+
+        return result;
     }
 
     constexpr auto forEachElement(std::function<void(T&)> func) {

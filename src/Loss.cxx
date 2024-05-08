@@ -9,11 +9,6 @@ export module loss;
 
 namespace Loss 
 {
-    // enum class LossFunction
-    // {
-    //     CategoricalCrossEntropy
-    // };
-
     static constexpr auto oneHotEncoding = []<std::size_t R, std::size_t C>(const auto& labels) 
     {
         auto result = Tensor<float, TensorParams{ R, C }>{ 0.0f };
@@ -76,6 +71,7 @@ namespace Loss
                                                     Mayflower::Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
             output.negative();
+            output.scaleEachValue( 1.0f / static_cast<float>(nextLayer.Inputs) );
             return output;
         }
 

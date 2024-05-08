@@ -95,6 +95,8 @@ public:
 
             case Softmax:
             {
+                std::cout << "Gradients\n" << gradients << '\n';
+
                 break;
             }
         }

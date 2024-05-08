@@ -27,7 +27,7 @@ auto main() -> int
     auto nd   = DenseLayer<
                             LayerParams{ .Inputs = 3uz, .Neurons = 3uz }, // layer params
                             LayerParams{ .Inputs = 3uz, .Neurons = 3uz }, // prev layer params
-                            LayerParams{ .Inputs = 3uz, .Neurons = 3uz }
+                            LayerParams{ .Inputs = 3uz, .Neurons = 3uz }  // next layer params
                           > { Activation::Softmax };
     
     auto loss = Loss::CategoricalCrossEntropy();
@@ -37,10 +37,15 @@ auto main() -> int
         auto o2 = nd.forward(o1);
 
         const auto lossValue = loss.forward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2, cols);
-        const auto accValue  = accuracy(&o2, cols);
-        std::cout << std::setprecision(4) << "Loss = " << lossValue << " | Accuracy = " << accValue * 100uz << "%\n";
+        const auto accValue  = accuracy(&o2, cols) * 100uz;
 
-        // auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
+        std::cout << std::setprecision(4) << "Loss = " << lossValue << " | " << 
+                                             "Accuracy = " << accValue << "%\n";
+
+        auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
+        
+        std::cout << "Loss backward\n" << o3 << '\n';
+
         // auto o4 = nd.backward(o3);
         // auto o5 = st.backward(o4);
 

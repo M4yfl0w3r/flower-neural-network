@@ -34,8 +34,8 @@ public:
     }
 
     constexpr auto update(float learningRate) {
-        m_weightsGrad.forEachElement( [=](auto& el){ el *= learningRate; } );
-        m_weights = m_weights + m_weightsGrad;
+        // m_weightsGrad.forEachElement( [=](auto& el){ el *= learningRate; } );
+        // m_weights = m_weights + m_weightsGrad;
     }
 
     constexpr auto printWeights() const {
@@ -68,6 +68,8 @@ public:
             }
         }
 
+        m_forwardOutput = output;
+
         return output;
     }
 
@@ -78,9 +80,9 @@ public:
         const auto weightsT = transpose(m_weights);
         auto output         = gradients * weightsT;
 
-        const auto inputsT  = transpose(m_forwardInput);
-        auto test = inputsT * gradients;
-        m_weightsGrad = test;
+        // const auto inputsT  = transpose(m_forwardInput);
+        // auto test = inputsT * gradients;
+        // m_weightsGrad = test;
 
         using enum Activation;
 
@@ -95,7 +97,22 @@ public:
 
             case Softmax:
             {
-                std::cout << "Gradients\n" << gradients << '\n';
+                // TODO: Move it to a separate function
+                auto jacobian = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{};
+                auto [R, C]   = jacobian.shape();
+
+                for (const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
+                {
+                    for (auto i = 0uz; i < R; ++i) {
+                        for (auto j = 0uz; j < C; ++j) {
+                            const auto ith_output = output.at(i);
+                            if (i == j)
+                                jacobian.fillAt(i, j, ith_output * (1.0f - ith_output));
+                            else 
+                                jacobian.fillAt(i, j, - ith_output * output.at(j));
+                        }
+                    }
+                }
 
                 break;
             }
@@ -108,6 +125,7 @@ private:
     const Activation m_activation;
 
     Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }> m_forwardInput;
+    Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }> m_forwardOutput;
     Tensor<float, TensorParams{ params.Inputs, params.Neurons}>        m_weightsGrad;
     Tensor<float, TensorParams{ params.Inputs, params.Neurons}>        m_weights;
     Tensor<float, TensorParams{ 1uz, params.Neurons }>                 m_biasesGrad;

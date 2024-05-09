@@ -209,8 +209,8 @@ export template<typename T, TensorParams params>
 {
     auto result = Tensor<T, params>{};
 
-    for (auto i = 0uz; i < params.Rows; ++i)
-        for (auto j = 0uz; j < params.Cols; ++j)
+    for (auto i : std::ranges::iota_view(0uz, params.Rows))
+        for (auto j : std::ranges::iota_view(0uz, params.Cols))
             result.fillAt(i, j, one.at(i, j) - other.at(i, j));
 
     return result;
@@ -225,8 +225,8 @@ export template<typename T, TensorParams params>
 {
     auto result = Tensor<T, params>{};
 
-    for (auto i = 0uz; i < params.Rows; ++i)
-        for (auto j = 0uz; j < params.Cols; ++j)
+    for (auto i : std::ranges::iota_view(0uz, params.Rows))
+        for (auto j : std::ranges::iota_view(0uz, params.Cols))
             result.fillAt(i, j, one.at(i, j) + other.at(i, j));
 
     return result;
@@ -243,8 +243,8 @@ export template<typename T, TensorParams a, TensorParams b>
 
     auto result = Tensor<T, a>{};
 
-    for (auto i = 0uz; i < a.Rows; ++i)
-        for (auto j = 0uz; j < a.Cols; ++j)
+    for (auto i : std::ranges::iota_view(0uz, a.Rows))
+        for (auto j : std::ranges::iota_view(0uz, a.Cols))
             result.fillAt(i, j, one.at(i, j) + other.at(0uz, i));
 
     return result;
@@ -272,10 +272,12 @@ export template<typename T, TensorParams a, TensorParams b>
     auto result = Tensor<T, TensorParams{ a.Rows, b.Cols } >{};
 
     // TODO: Strassen algorithm
-    for (auto i = 0uz; i < a.Rows; ++i) {
-        for (auto j = 0uz; j < b.Cols; ++j) {
+    for (auto i : std::ranges::iota_view(0uz, a.Rows)) 
+    {
+        for (auto j : std::ranges::iota_view(0uz, b.Cols)) 
+        {
             T sum{};
-            for (auto k = 0uz; k < a.Cols; ++k)
+            for (auto k : std::ranges::iota_view(0uz, a.Cols))
                 sum += one.at(i, k) * other.at(k, j);
             result.fillAt(i, j, sum);
         }
@@ -331,8 +333,8 @@ export template<typename T, TensorParams params>
 {
     auto result = Tensor<T, params>{};
 
-    for (auto i = 0uz; i < params.Rows; ++i) {
-        for (auto j = 0uz; j < params.Cols; ++j) {
+    for (auto i : std::ranges::iota_view(0uz, params.Rows)) {
+        for (auto j : std::ranges::iota_view(0uz, params.Cols)) {
             result.fillAt(i, j, one.at(i, j) / other.at(i, j));
         }
     }
@@ -348,8 +350,8 @@ export template<typename T, TensorParams params>
 {
     std::array<std::array<T, params.Rows>, params.Cols> result{};
 
-    for (auto i = 0uz; i < params.Cols; ++i) {
-        for (auto j = 0uz; j < params.Rows; ++j) {
+    for (auto i : std::ranges::iota_view(0uz, params.Cols)) {
+        for (auto j : std::ranges::iota_view(0uz, params.Rows)) {
             result.at(i).at(j) = tensor.at(j, i);
         }
     }

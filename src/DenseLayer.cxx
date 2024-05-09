@@ -84,23 +84,25 @@ public:
 
             case ReLU:
             {
-                // output.forEachElement( [](auto& el){ el <= 0.0f ? el = 0.0f : el; } );
-                break;
+                auto result = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ gradients };
+
+                return gradients;
             }
 
             case Softmax:
             {
                 // TODO: Move it to a separate function
                 // TODO: Do not cast to Tensor, do all the operations in the Tensor class
-                auto jacobian = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{};
+
                 auto result   = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ 0.0f };
+                auto jacobian = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{};
                 auto [R, C]   = jacobian.shape();
 
                 for (auto index = 0uz; 
                     const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
                 {
-                    for (auto i = 0uz; i < R; ++i) {
-                        for (auto j = 0uz; j < C; ++j) {
+                    for (auto i : std::ranges::iota_view(0uz, R)) {
+                        for (auto j : std::ranges::iota_view(0uz, C)) {
                             const auto ith_output = output.at(i);
                             if (i == j)
                                 jacobian.fillAt(i, j, ith_output * (1.0f - ith_output));
@@ -117,14 +119,15 @@ public:
                     result.exchangeRow(index++, untransposed.data());
                 }
 
-                break;
-            }
-        }
+                const auto weightsT = transpose(m_weights);
+                auto output = result * weightsT;
 
-        // const auto weightsT = transpose(m_weights);
-        // auto output         = gradients * weightsT;
-        return gradients;
-        // return output;
+                return output;
+            }
+
+            default:
+                std::unreachable();
+        }
     }
 
 private:

@@ -32,7 +32,7 @@ auto main() -> int
     
     auto loss = Loss::CategoricalCrossEntropy();
     
-    // for (auto i = 0uz; i < Config::epochs; ++i) {
+    // for (auto i : std::ranges::iota_view(0uz, Config::epochs)) {
         auto o1 = st.forward(rows);
         auto o2 = nd.forward(o1);
 
@@ -44,7 +44,6 @@ auto main() -> int
 
         auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
         auto o4 = nd.backward(o3);
-        
         // auto o5 = st.backward(o4);
 
         // st.update(Config::learningRate);

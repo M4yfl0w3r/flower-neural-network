@@ -13,10 +13,8 @@ namespace Loss
     {
         auto result = Tensor<float, TensorParams{ R, C }>{ 0.0f };
 
-        for (auto i = 0uz; i < R; ++i) 
-        {
+        for (auto i : std::ranges::iota_view(0uz, R))
             result.fillAt(i, labels.at(i, 0uz), 1.0f);
-        }
 
         return result;
     };
@@ -27,7 +25,7 @@ namespace Loss
         const auto predictions  = input->argMax();
         auto correctPredictions = 0uz;
 
-        for (auto i = 0uz; i < rows; ++i) 
+        for (auto i : std::ranges::iota_view(0uz, rows))
             if (labels.at(i) == predictions.at(i))
                 ++correctPredictions;
 

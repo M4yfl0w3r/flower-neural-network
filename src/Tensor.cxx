@@ -17,11 +17,11 @@ class Tensor final
 public:
     constexpr Tensor() = default;
     
-    constexpr Tensor(std::array<std::array<T, params.Cols>, params.Rows> data)
+    explicit constexpr Tensor(std::array<std::array<T, params.Cols>, params.Rows> data)
         : m_data{ data }
     {}
 
-    constexpr Tensor(T value) {
+    explicit constexpr Tensor(T value) {
         fill(value);
     }
 
@@ -150,6 +150,11 @@ public:
         }
     }
 
+    // TODO: Should accept 1D array
+    constexpr auto exchangeRow(std::size_t row, std::array<std::array<T, params.Cols>, 1uz> data) {
+        m_data.at(row) = data.at(0uz);
+    }
+
     constexpr auto print() const {
         for (const auto& row : m_data) {
             for (const auto& el : row)
@@ -193,7 +198,6 @@ private:
 
     std::array<std::array<T, params.Cols>, params.Rows> m_data;
 };
-
 
 // TODO: Find a better way to write this
 
@@ -351,4 +355,14 @@ export template<typename T, TensorParams params>
     }
 
     return Tensor<T, TensorParams{ params.Cols, params.Rows }>(result);
+}
+
+export template<typename T, std::size_t Cols>
+[[nodiscard]] inline constexpr auto Tensor1D(
+    std::array<T, Cols> data) 
+{
+    auto data1d = std::array<std::array<T, Cols>, 1uz>{ T{} };
+    data1d.at(0uz) = data;
+    auto result = Tensor<T, TensorParams{ .Rows = 1uz, .Cols = Cols }>{ data1d };
+    return result;
 }

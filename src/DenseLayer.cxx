@@ -77,13 +77,6 @@ public:
         const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
     )
     {
-        const auto weightsT = transpose(m_weights);
-        auto output         = gradients * weightsT;
-
-        // const auto inputsT  = transpose(m_forwardInput);
-        // auto test = inputsT * gradients;
-        // m_weightsGrad = test;
-
         using enum Activation;
 
         switch (m_activation) {
@@ -91,17 +84,20 @@ public:
 
             case ReLU:
             {
-                output.forEachElement( [](auto& el){ el <= 0.0f ? el = 0.0f : el; } );
+                // output.forEachElement( [](auto& el){ el <= 0.0f ? el = 0.0f : el; } );
                 break;
             }
 
             case Softmax:
             {
                 // TODO: Move it to a separate function
+                // TODO: Do not cast to Tensor, do all the operations in the Tensor class
                 auto jacobian = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{};
+                auto result   = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ 0.0f };
                 auto [R, C]   = jacobian.shape();
 
-                for (const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
+                for (auto index = 0uz; 
+                    const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
                 {
                     for (auto i = 0uz; i < R; ++i) {
                         for (auto j = 0uz; j < C; ++j) {
@@ -112,13 +108,23 @@ public:
                                 jacobian.fillAt(i, j, - ith_output * output.at(j));
                         }
                     }
+
+                    auto gradTensor   = Tensor1D(gradient);
+                    auto gradTensorT  = transpose(gradTensor);
+                    auto dotProduct   = jacobian * gradTensorT;
+                    auto untransposed = transpose(dotProduct);
+
+                    result.exchangeRow(index++, untransposed.data());
                 }
 
                 break;
             }
         }
 
-        return output;
+        // const auto weightsT = transpose(m_weights);
+        // auto output         = gradients * weightsT;
+        return gradients;
+        // return output;
     }
 
 private:

@@ -39,10 +39,6 @@ public:
         // m_weights = m_weights + m_weightsGrad;
     }
 
-    constexpr auto printWeights() const {
-        m_weights.print();
-    }
-
     [[nodiscard]] constexpr auto forward(
         const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input
     )
@@ -87,8 +83,12 @@ public:
         result.mask(lessThanZeroMask);
 
         const auto weightsT = transpose(m_weights);
-        auto output = result * weightsT;
-        
+        const auto inputsT  = transpose(m_forwardInput);
+
+        auto output        = result * weightsT;
+        auto m_weightsGrad = inputsT * gradients;
+        auto m_biasesGrad  = gradients.sumEachColumn();
+
         return output;
     }
 

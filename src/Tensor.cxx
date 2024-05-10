@@ -73,7 +73,20 @@ public:
 
         return result;
     }
-        
+
+    [[nodiscard]] constexpr auto sumEachColumn() const {
+        auto result = std::array<std::array<T, params.Cols>, 1uz>{ T{} };
+
+        for (const auto& row : m_data) {
+            for (auto i = 0u; const auto& el : row) {
+                result.at(0uz).at(i) += el;
+                ++i;
+            }
+        }
+
+        return Tensor<T, TensorParams{ 1uz, params.Cols }>(result);
+    }
+         
     [[nodiscard]] constexpr auto exp() {
         auto result = Tensor<T, params>{m_data};
         result.forEachElement( [](auto& el){ el = std::exp(el); });

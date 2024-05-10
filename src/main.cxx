@@ -44,29 +44,26 @@ auto main() -> int
                           > {};
                         
     auto nd   = DenseLayer<
-                            LayerParams{ .Inputs = 10uz, .Neurons = 3uz },   // layer params
-                            LayerParams{ .Inputs = 10uz, .Neurons = 10uz },  // prev layer params
+                            LayerParams{ .Inputs = 10uz, .Neurons = 3uz },  // layer params
+                            LayerParams{ .Inputs = 10uz, .Neurons = 10uz }, // prev layer params
                             LayerParams{ .Inputs = 10uz, .Neurons = 3uz }   // next layer params
                           > {};
     
-//     auto loss = Loss::CategoricalCrossEntropy();
+    auto loss = Loss::CategoricalCrossEntropy();
     
 //     for (auto i : std::ranges::iota_view(0uz, Config::epochs)) 
 //     {
         auto o1 = st.forwardReLU(rows);
-        nd.forwardSoftmax(o1);
-
-        // std::cout << '\n' << o2 << '\n';
-        // o2.printShape(); // should be (10, 3)
+        auto o2 = nd.forwardSoftmax(o1);
         
-//         const auto lossValue = loss.forward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2, cols);
-//         const auto accValue  = accuracy(&o2, cols) * 100uz;
+        const auto lossValue = loss.forward< LayerParams{ .Inputs = 10uz, .Neurons = 3uz } >(o2, cols);
+        const auto accValue  = accuracy(&o2, cols) * 100uz;
 
-//         std::cout << std::setprecision(4) << "Loss = " << lossValue << " | " << 
-//                                              "Accuracy = " << accValue << "%\n";
+        std::cout << std::setprecision(4) << "Loss = " << lossValue << " | " << 
+                                             "Accuracy = " << accValue << "%\n";
 
-//         auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
-//         auto o4 = nd.backwardSoftmax(o3);
-//         auto o5 = st.backwardReLU(o4);
+        auto o3 = loss.backward< LayerParams{ .Inputs = 10uz, .Neurons = 3uz } >(o2);
+        // auto o4 = nd.backwardSoftmax(o3);
+        // auto o5 = st.backwardReLU(o4);
 //     }
 }

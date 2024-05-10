@@ -54,6 +54,7 @@ public:
 
             case ReLU:
             {
+                m_forwardActivationInput = output;
                 output.relu();
                 break;
             }
@@ -73,12 +74,16 @@ public:
         return output;
     }
 
-    [[nodiscard]] constexpr auto backward(
+    // [[nodiscard]] constexpr auto backward(
+    //     const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
+    // )
+    constexpr auto backward(
         const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
     )
     {
         using enum Activation;
 
+        // TODO: Move it to a separate function
         switch (m_activation) {
             using enum Activation;
 
@@ -86,12 +91,16 @@ public:
             {
                 auto result = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ gradients };
 
-                return gradients;
+                static constexpr auto lessThanZero = [](auto& el) { return el <= 0.0f; };
+                auto lessThanZeroMask = m_forwardActivationInput.where(lessThanZero);
+
+                result.mask(lessThanZeroMask);
+
+                // return result;
             }
 
             case Softmax:
             {
-                // TODO: Move it to a separate function
                 // TODO: Do not cast to Tensor, do all the operations in the Tensor class
 
                 auto result   = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ 0.0f };
@@ -134,7 +143,10 @@ private:
     const Activation m_activation;
 
     Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }> m_forwardInput;
+    
     Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }> m_forwardOutput;
+    Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }> m_forwardActivationInput;;
+
     Tensor<float, TensorParams{ params.Inputs, params.Neurons}>        m_weightsGrad;
     Tensor<float, TensorParams{ params.Inputs, params.Neurons}>        m_weights;
     Tensor<float, TensorParams{ 1uz, params.Neurons }>                 m_biasesGrad;

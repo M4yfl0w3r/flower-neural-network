@@ -43,8 +43,8 @@ public:
         return m_data.at(0uz).at(0uz);
     }
 
-    // TODO: Rewrite
     [[nodiscard]] constexpr auto mean() const {
+        // TODO: Rewrite
         auto sum = T{};
         for (const auto& row : m_data) {
             sum += std::accumulate(std::begin(row), std::end(row), T{});
@@ -97,6 +97,26 @@ public:
         return result;
     }
 
+    [[nodiscard]] constexpr auto where(std::function<bool(T&)> what) {
+        // Get indices that satisfy a condition specified by the 'what' function.
+
+        std::array<std::array<std::size_t, params.Cols>, params.Rows> mask{ 0uz };
+
+        for (auto i = 0uz; auto& row : m_data) {
+            auto it = std::find_if(std::begin(row), std::end(row), what);
+
+            while (it != std::end(row)) {
+                auto j = std::distance(std::begin(row), it);
+                mask.at(i).at(j) = 1uz;
+                it = std::find_if(std::next(it), std::end(row), what);
+            }
+
+            ++i;
+        }
+
+        return mask;
+    }
+
     constexpr auto forEachElement(std::function<void(T&)> func) {
         for (auto& row : m_data) 
             std::ranges::for_each(row, func);
@@ -124,6 +144,13 @@ public:
     
     constexpr auto relu() {
         forEachElement( [](auto& el){ el = std::max(T{}, el); });
+    }
+
+    constexpr auto mask(std::array<std::array<std::size_t, params.Cols>, params.Rows> mask) {
+        for (auto i : std::ranges::iota_view(0uz, params.Rows))
+            for (auto j : std::ranges::iota_view(0uz, params.Cols))
+                if (mask.at(i).at(j) == 1)
+                    m_data.at(i).at(j) = T{};
     }
 
     constexpr auto subtractMaxFromEachRow() {
@@ -182,7 +209,10 @@ public:
         else {
             for (const auto& row : tensor.data()) {
                 for (const auto& el : row) {
-                    stream << el << ' ';
+                    stream << std::setw(10) 
+                           << std::fixed
+                           << std::setprecision(7)
+                           << el << ' ';
                 }
                 stream << '\n';
             }

@@ -1,2 +1,4 @@
 Neural network implementation using modules.
 
+TODO
+- Change TensorParams & LayerParams to std::pair?

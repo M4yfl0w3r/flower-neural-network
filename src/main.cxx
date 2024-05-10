@@ -43,9 +43,10 @@ auto main() -> int
                                              "Accuracy = " << accValue << "%\n";
 
         auto o3 = loss.backward< LayerParams{ .Inputs = 3uz, .Neurons = 3uz } >(o2);
-        auto o4 = nd.backward(o3);
-        // auto o5 = st.backward(o4);
-        st.backward(o4);
+        auto o4 = nd.backwardWithSoftmax(o3);
+        auto o5 = st.backwardWithReLU(o4);
+
+        std::cout << "\nPropagated gradient\n" << o5 << '\n';
 
         // st.update(Config::learningRate);
         // nd.update(Config::learningRate);

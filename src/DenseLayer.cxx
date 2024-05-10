@@ -21,6 +21,7 @@ export template<LayerParams params, LayerParams prevLayer, LayerParams nextLayer
 class DenseLayer final
 {
 public:
+    // TODO: Move activation somewhere else
     explicit constexpr DenseLayer(Activation activation) 
         : m_activation{activation}
     {
@@ -74,69 +75,56 @@ public:
         return output;
     }
 
-    // [[nodiscard]] constexpr auto backward(
-    //     const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
-    // )
-    constexpr auto backward(
+    [[nodiscard]] constexpr auto backwardWithReLU(
         const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
     )
     {
-        using enum Activation;
+        auto result = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ gradients };
 
-        // TODO: Move it to a separate function
-        switch (m_activation) {
-            using enum Activation;
+        static constexpr auto lessThanZero = [](auto& el) { return el <= 0.0f; };
+        auto lessThanZeroMask = m_forwardActivationInput.where(lessThanZero);
 
-            case ReLU:
-            {
-                auto result = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ gradients };
+        result.mask(lessThanZeroMask);
 
-                static constexpr auto lessThanZero = [](auto& el) { return el <= 0.0f; };
-                auto lessThanZeroMask = m_forwardActivationInput.where(lessThanZero);
+        const auto weightsT = transpose(m_weights);
+        auto output = result * weightsT;
+        
+        return output;
+    }
 
-                result.mask(lessThanZeroMask);
+    [[nodiscard]] constexpr auto backwardWithSoftmax(
+        const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
+    )
+    {
+        auto result   = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ 0.0f };
+        auto jacobian = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{};
+        auto [R, C]   = jacobian.shape();
 
-                // return result;
-            }
-
-            case Softmax:
-            {
-                // TODO: Do not cast to Tensor, do all the operations in the Tensor class
-
-                auto result   = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ 0.0f };
-                auto jacobian = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{};
-                auto [R, C]   = jacobian.shape();
-
-                for (auto index = 0uz; 
-                    const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
-                {
-                    for (auto i : std::ranges::iota_view(0uz, R)) {
-                        for (auto j : std::ranges::iota_view(0uz, C)) {
-                            const auto ith_output = output.at(i);
-                            if (i == j)
-                                jacobian.fillAt(i, j, ith_output * (1.0f - ith_output));
-                            else 
-                                jacobian.fillAt(i, j, - ith_output * output.at(j));
-                        }
-                    }
-
-                    auto gradTensor   = Tensor1D(gradient);
-                    auto gradTensorT  = transpose(gradTensor);
-                    auto dotProduct   = jacobian * gradTensorT;
-                    auto untransposed = transpose(dotProduct);
-
-                    result.exchangeRow(index++, untransposed.data());
+        for (auto index = 0uz; 
+            const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
+        {
+            for (auto i : std::ranges::iota_view(0uz, R)) {
+                for (auto j : std::ranges::iota_view(0uz, C)) {
+                    const auto ith_output = output.at(i);
+                    if (i == j)
+                        jacobian.fillAt(i, j, ith_output * (1.0f - ith_output));
+                    else 
+                        jacobian.fillAt(i, j, - ith_output * output.at(j));
                 }
-
-                const auto weightsT = transpose(m_weights);
-                auto output = result * weightsT;
-
-                return output;
             }
 
-            default:
-                std::unreachable();
+            auto gradTensor   = Tensor1D(gradient);
+            auto gradTensorT  = transpose(gradTensor);
+            auto dotProduct   = jacobian * gradTensorT;
+            auto untransposed = transpose(dotProduct);
+
+            result.exchangeRow(index++, untransposed.data());
         }
+
+        const auto weightsT = transpose(m_weights);
+        auto output = result * weightsT;
+
+        return output;
     }
 
 private:

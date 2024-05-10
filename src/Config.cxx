@@ -9,7 +9,7 @@ export namespace Mayflower::Config
     inline constexpr auto dataCols     = 4uz;
     inline constexpr auto labelPos     = 10uz;
     inline constexpr auto numClasses   = 3uz;
-    inline constexpr auto learningRate = 0.01f;
-    inline constexpr auto epochs       = 2uz;
-    inline constexpr auto batchSize    = 3uz;
+    inline constexpr auto learningRate = 0.3f;
+    inline constexpr auto epochs       = 1uz;
+    inline constexpr auto batchSize    = 10uz;
 }

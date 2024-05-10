@@ -204,7 +204,7 @@ public:
     }
 
     constexpr auto printShape() const {
-        std::cout << "Shape = " << params.Rows << ", " << params.Cols << '\n';
+        std::cout << "Shape = (" << params.Rows << ", " << params.Cols << ")\n";
     }
 
     constexpr auto operator- () {
@@ -282,13 +282,13 @@ export template<typename T, TensorParams a, TensorParams b>
     const Tensor<T, b>& other   // Biases
 )
 {
-    static_assert(a.Rows == b.Cols && b.Rows == 1uz);
+    static_assert(a.Cols == b.Cols && b.Rows == 1uz);
 
     auto result = Tensor<T, a>{};
 
     for (auto i : std::ranges::iota_view(0uz, a.Rows))
         for (auto j : std::ranges::iota_view(0uz, a.Cols))
-            result.fillAt(i, j, one.at(i, j) + other.at(0uz, i));
+            result.fillAt(i, j, one.at(i, j) + other.at(0uz, j));
 
     return result;
 }

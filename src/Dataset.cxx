@@ -57,7 +57,7 @@ export namespace Dataset
             labels.at(i).at(0u) = label;
             ++i;
         }
-        
+
         return std::make_pair(data, labels);
     }
 }

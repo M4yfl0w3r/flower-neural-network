@@ -46,7 +46,7 @@ public:
         const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input
     )
     {
-        auto output    = (input * m_weights) + m_biases;
+        auto output = (input * m_weights) + m_biases;
             
         output.subtractMaxFromEachRow();
         auto expValues    = output.exp();
@@ -59,7 +59,6 @@ public:
         return output;
     }
 
-    // TODO: Combine backward functions
     [[nodiscard]] constexpr auto backwardReLU(
         const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
     )

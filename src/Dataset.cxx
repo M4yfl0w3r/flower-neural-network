@@ -13,51 +13,51 @@ export namespace Dataset
     {
         using namespace Mayflower;
 
-        auto file = std::ifstream{path, std::ios::in | std::ios::binary};
-        const auto fileSize = static_cast<std::size_t>(fs::file_size(path));
+        auto data = std::vector<std::string>{};
+        auto file = std::ifstream(path);
+        auto line = std::string{};
 
-        auto buffer = std::string(fileSize, '\0');
-        file.read(buffer.data(), static_cast<std::streamsize>(fileSize));
+        auto rows   = std::array<std::array<float, Config::dataCols>, Config::dataRows>{};
+        auto labels = std::array<std::array<std::size_t, 1uz>, Config::dataRows>{};
 
-        std::stringstream test{buffer};
-        std::string segment{};
-        std::vector<std::string> seglist{};
+        while(std::getline(file, line)) {
+            data.push_back(line);
+        }
 
-        while(std::getline(test, segment, '\n'))
-            seglist.push_back(segment);
-
-        std::array<std::array<float, Config::dataCols>, Config::dataRows> data{};
-        std::array<std::array<std::size_t, 1uz>, Config::dataRows> labels{};
-
-        // For some reason enumerate does not work with import std.
-        for (auto i = 0uz; const auto& row : seglist)
+        for (auto i = 0uz; const auto& row : data) 
         {
             if (i > Config::dataRows - 1uz) break;
 
-            std::istringstream iss(row);
-            std::vector<float> numbers{};
-            std::string token{};
-            auto label = Config::labelPos;
-            
-            while (std::getline(iss, token, ',')) 
-            {
-                if (token == "Iris-setosa")
-                    label = 0uz;
-                else if (token == "Iris-versicolor")
-                    label = 1uz;
-                else if (token == "Iris-virginica")
-                    label = 2uz;
-                else
-                    numbers.push_back(std::stof(token));
-            }
-            
-            for (auto j = 0uz; j < Config::dataCols; ++j)
-                data.at(i).at(j) = numbers.at(j);
+            auto stream  = std::istringstream(row);
+            auto field   = std::string{};
+            auto label   = 10uz;
+            auto numbers = std::array<float, Config::dataCols>{};
 
+            auto j = 0uz;
+
+            while (std::getline(stream, field, ',')) 
+            {
+                if (field == "Iris-setosa")          
+                    label = 0uz;
+
+                else if (field == "Iris-versicolor") 
+                    label = 1uz;
+
+                else if (field == "Iris-virginica")  
+                    label = 2uz;
+
+                else
+                    numbers.at(j) = std::stof(field);
+
+                ++j;
+            }
+
+            rows.at(i) = numbers;
             labels.at(i).at(0uz) = label;
+
             ++i;
         }
 
-        return std::make_pair(data, labels);
+        return std::make_pair( rows, labels );
     }
 }

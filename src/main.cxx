@@ -10,9 +10,11 @@ auto main() -> int
     using namespace Mayflower;
     using namespace Loss;
 
+    Dataset::readFile(Config::irisPath);
+
     const auto& [data, labels] = Dataset::readFile(Config::irisPath);
 
-    std::array<std::array<float, 4u>, 10u> batchRows { data.at(0), 
+    std::array<std::array<float, 4u>, 10u> batchRows { data.at(0),
                                                        data.at(1), 
                                                        data.at(2), 
                                                        data.at(3), 
@@ -31,7 +33,7 @@ auto main() -> int
                                                              labels.at(5), 
                                                              labels.at(6), 
                                                              labels.at(7), 
-                                                             labels.at(54), 
+                                                             labels.at(54),
                                                              labels.at(119) };
 
     auto rows = Tensor<float, TensorParams{ .Rows = 10uz, .Cols = 4uz }>{ batchRows };

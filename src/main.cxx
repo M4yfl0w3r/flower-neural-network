@@ -51,8 +51,8 @@ auto main() -> int
     
     auto loss = Loss::CategoricalCrossEntropy();
     
-//     for (auto i : std::ranges::iota_view(0uz, Config::epochs)) 
-//     {
+    for (auto i : std::ranges::iota_view(0uz, Config::epochs)) 
+    {
         auto o1 = st.forwardReLU(rows);
         auto o2 = nd.forwardSoftmax(o1);
         
@@ -64,9 +64,6 @@ auto main() -> int
 
         auto o3 = loss.backward< LayerParams{ .Inputs = 10uz, .Neurons = 3uz } >(o2);
         auto o4 = nd.backwardSoftmax(o3);
-
-        std::cout << "\no4\n" << o4 << '\n';
-
-        // auto o5 = st.backwardReLU(o4);
-//     }
+        auto o5 = st.backwardReLU(o4);
+    }
 }

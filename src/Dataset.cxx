@@ -27,12 +27,12 @@ export namespace Dataset
             seglist.push_back(segment);
 
         std::array<std::array<float, Config::dataCols>, Config::dataRows> data{};
-        std::array<std::array<std::size_t, 1u>, Config::dataRows> labels{};
+        std::array<std::array<std::size_t, 1uz>, Config::dataRows> labels{};
 
         // For some reason enumerate does not work with import std.
-        for (auto i = 0u; const auto& row : seglist)
+        for (auto i = 0uz; const auto& row : seglist)
         {
-            if (i > Config::dataRows - 1) break;
+            if (i > Config::dataRows - 1uz) break;
 
             std::istringstream iss(row);
             std::vector<float> numbers{};
@@ -42,19 +42,19 @@ export namespace Dataset
             while (std::getline(iss, token, ',')) 
             {
                 if (token == "Iris-setosa")
-                    label = 0u;
+                    label = 0uz;
                 else if (token == "Iris-versicolor")
-                    label = 1u;
+                    label = 1uz;
                 else if (token == "Iris-virginica")
-                    label = 2u;
+                    label = 2uz;
                 else
                     numbers.push_back(std::stof(token));
             }
             
-            for (auto j = 0u; j < Config::dataCols; ++j)
+            for (auto j = 0uz; j < Config::dataCols; ++j)
                 data.at(i).at(j) = numbers.at(j);
 
-            labels.at(i).at(0u) = label;
+            labels.at(i).at(0uz) = label;
             ++i;
         }
 

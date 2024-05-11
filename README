@@ -1,4 +1,8 @@
-Neural network implementation using modules.
+Neural network implementation with no external libraries, using C++20 modules.
 
 TODO
-- Change TensorParams & LayerParams to std::pair?
+- Make it an actual deep learning framework.
+- Write a simple CSV file parser to read data in a better way.
+- Change the Tensor API to be more consistent.
+- Create a Dataset class to manage data.
+- Create a Model class that would store layers.

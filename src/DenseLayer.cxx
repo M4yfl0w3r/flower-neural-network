@@ -46,13 +46,15 @@ public:
         const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input
     )
     {
-        m_forwardInput = input;
         auto output    = (input * m_weights) + m_biases;
             
         output.subtractMaxFromEachRow();
         auto expValues    = output.exp();
         auto expValuesSum = expValues.sumEachRow();
         output = expValues / expValuesSum;
+    
+        m_forwardInput = input;
+        m_forwardOutput = output;
 
         return output;
     }
@@ -89,16 +91,18 @@ public:
         const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
     )
     {
-        auto result   = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ 0.0f };
-        auto jacobian = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{};
-        auto [R, C]   = jacobian.shape();
+        auto result = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ 0.0f };
 
         for (auto index = 0uz; 
             const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
         {
+            auto jacobian = Tensor<float, TensorParams{ Mayflower::Config::numClasses, 
+                                                        Mayflower::Config::numClasses }>{};
+            auto [R, C]   = jacobian.shape();
+
             for (auto i : std::ranges::iota_view(0uz, R)) {
                 for (auto j : std::ranges::iota_view(0uz, C)) {
-                    const auto ith_output = output.at(i);
+                    auto ith_output = output.at(i);
                     if (i == j)
                         jacobian.fillAt(i, j, ith_output * (1.0f - ith_output));
                     else 

@@ -44,12 +44,10 @@ public:
     }
 
     [[nodiscard]] constexpr auto mean() const {
-        // TODO: Rewrite
         auto sum = T{};
         for (const auto& row : m_data) {
             sum += std::accumulate(std::begin(row), std::end(row), T{});
         }
-
         return Tensor1D(sum / (params.Rows * params.Cols));
     }
     
@@ -58,7 +56,6 @@ public:
         for (const auto& row : m_data) {
             sum += std::accumulate(std::begin(row), std::end(row), T{});
         }
-
         return Tensor1D(sum);
     }
 
@@ -130,6 +127,13 @@ public:
         return mask;
     }
 
+    constexpr auto mask(std::array<std::array<std::size_t, params.Cols>, params.Rows> mask) {
+        for (auto i : std::ranges::iota_view(0uz, params.Rows))
+            for (auto j : std::ranges::iota_view(0uz, params.Cols))
+                if (mask.at(i).at(j) == 1)
+                    m_data.at(i).at(j) = T{};
+    }
+
     constexpr auto forEachElement(std::function<void(T&)> func) {
         for (auto& row : m_data) 
             std::ranges::for_each(row, func);
@@ -157,13 +161,6 @@ public:
     
     constexpr auto relu() {
         forEachElement( [](auto& el){ el = std::max(T{}, el); });
-    }
-
-    constexpr auto mask(std::array<std::array<std::size_t, params.Cols>, params.Rows> mask) {
-        for (auto i : std::ranges::iota_view(0uz, params.Rows))
-            for (auto j : std::ranges::iota_view(0uz, params.Cols))
-                if (mask.at(i).at(j) == 1)
-                    m_data.at(i).at(j) = T{};
     }
 
     constexpr auto subtractMaxFromEachRow() {

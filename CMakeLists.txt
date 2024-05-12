@@ -9,6 +9,6 @@ set( CMAKE_CXX_EXTENSIONS OFF )
 include(cmake/ModulesLocalBuild.cmake)
 include(cmake/ProjectModules.cmake)
 
-add_executable( ${PROJECT_NAME} src/main.cxx)
+add_executable( ${PROJECT_NAME} src/main.cxx )
 
 target_link_libraries( ${PROJECT_NAME} PRIVATE neuron )

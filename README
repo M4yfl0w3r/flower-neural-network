@@ -6,3 +6,4 @@ TODO
 - Change the Tensor API to be more consistent.
 - Create a Dataset class to manage data.
 - Create a Model class that would store layers.
+- Add tests.

@@ -68,7 +68,7 @@ public:
         static constexpr auto lessThanZero = [](auto& el) { return el <= 0.0f; };
         auto lessThanZeroMask = m_forwardActivationInput.where(lessThanZero);
 
-        result.mask(lessThanZeroMask);
+        result.mask(lessThanZeroMask, 0.0f);
 
         const auto weightsT = transpose(m_weights);
         const auto inputsT  = transpose(m_forwardInput);

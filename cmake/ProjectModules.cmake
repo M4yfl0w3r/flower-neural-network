@@ -11,5 +11,4 @@ target_sources( neuron
             ${PROJECT_SOURCE_DIR}/src/Dataset.cxx
             ${PROJECT_SOURCE_DIR}/src/DenseLayer.cxx
             ${PROJECT_SOURCE_DIR}/src/Loss.cxx
-            ${PROJECT_SOURCE_DIR}/src/Model.cxx
 )

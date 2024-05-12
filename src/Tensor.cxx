@@ -127,11 +127,11 @@ public:
         return mask;
     }
 
-    constexpr auto mask(std::array<std::array<std::size_t, params.Cols>, params.Rows> mask) {
+    constexpr auto mask(std::array<std::array<std::size_t, params.Cols>, params.Rows> mask, T maskValue) {
         for (auto i : std::ranges::iota_view(0uz, params.Rows))
             for (auto j : std::ranges::iota_view(0uz, params.Cols))
                 if (mask.at(i).at(j) == 1)
-                    m_data.at(i).at(j) = T{};
+                    m_data.at(i).at(j) = maskValue;
     }
 
     constexpr auto forEachElement(std::function<void(T&)> func) {
@@ -147,7 +147,7 @@ public:
         forEachElement([=](auto& el){ el = std::clamp(el, min, max); }); 
     }
         
-    constexpr auto fillAt(std::size_t i, std::size_t j, T value) { 
+    constexpr auto fillAt(std::size_t i, std::size_t j, T value) {
         m_data.at(i).at(j) = value; 
     }
 

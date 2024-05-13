@@ -15,6 +15,12 @@ export struct LayerParams
 export template<LayerParams params, LayerParams prevLayer, LayerParams nextLayer>
 class DenseLayer final
 {
+    using PreviousLayerTensor = Tensor<float, TensorParams{ prevLayer.Inputs, 
+                                                            prevLayer.Neurons }>;
+    
+    using NextLayerTensor = Tensor<float, TensorParams{ nextLayer.Inputs, 
+                                                        nextLayer.Neurons}>;
+
 public:
     explicit constexpr DenseLayer() 
     {
@@ -22,14 +28,12 @@ public:
         m_biases  = Tensor<float, TensorParams{ 1uz, params.Neurons } >();
 
         m_weights.fillWithRandomValues({ -1.0f, 1.0f });
-        m_biases.fillWithRandomValues({ 0.0f, 0.0f });      // TODO: For now, all biases = 0
+        m_biases.fillWithRandomValues({ 0.0f, 0.0f }); // TODO: For now, all biases = 0
 
         m_weights.scaleEachValue(0.01f);
     }
 
-    [[nodiscard]] constexpr auto forwardReLU(
-        const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input
-    )
+    [[nodiscard]] constexpr auto forwardReLU(const PreviousLayerTensor& input)
     {
         m_forwardInput = input;
         auto output    = (input * m_weights) + m_biases;
@@ -42,9 +46,7 @@ public:
         return output;
     }
 
-    [[nodiscard]] constexpr auto forwardSoftmax(
-        const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input
-    )
+    [[nodiscard]] constexpr auto forwardSoftmax(const PreviousLayerTensor& input)
     {
         auto output = (input * m_weights) + m_biases;
             
@@ -59,11 +61,9 @@ public:
         return output;
     }
 
-    [[nodiscard]] constexpr auto backwardReLU(
-        const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
-    )
+    [[nodiscard]] constexpr auto backwardReLU(const NextLayerTensor& gradients)
     {
-        auto result = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ gradients };
+        auto result = NextLayerTensor{ gradients };
 
         static constexpr auto lessThanZero = [](auto& el) { return el <= 0.0f; };
         auto lessThanZeroMask = m_forwardActivationInput.where(lessThanZero);
@@ -77,26 +77,24 @@ public:
         auto m_weightsGrad = inputsT * gradients;
         auto m_biasesGrad  = gradients.sumEachColumn();
 
-        m_weightsGrad.forEachElement( [=](auto& el){ el *= -Mayflower::Config::learningRate; } );
+        m_weightsGrad.forEachElement( [=](auto& el){ el *= -Config::learningRate; } );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.forEachElement( [=](auto& el){ el *= -Mayflower::Config::learningRate; });
+        m_biasesGrad.forEachElement( [=](auto& el){ el *= -Config::learningRate; });
         m_biases = m_biases + m_biasesGrad;
 
         return output;
     }
 
-    [[nodiscard]] constexpr auto backwardSoftmax(
-        const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons} >& gradients
-    )
+    [[nodiscard]] constexpr auto backwardSoftmax(const NextLayerTensor& gradients)
     {
-        auto result = Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>{ 0.0f };
+        auto result = NextLayerTensor{ 0.0f };
 
         for (auto index = 0uz; 
             const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
         {
-            auto jacobian = Tensor<float, TensorParams{ Mayflower::Config::numClasses, 
-                                                        Mayflower::Config::numClasses }>{};
+            auto jacobian = Tensor<float, TensorParams{ Config::numClasses, 
+                                                        Config::numClasses }>{};
             auto [R, C]   = jacobian.shape();
 
             for (auto i : std::ranges::iota_view(0uz, R)) {
@@ -124,23 +122,23 @@ public:
         auto m_weightsGrad  = inputsT * gradients;
         auto m_biasesGrad   = gradients.sumEachColumn();
         
-        m_weightsGrad.forEachElement( [=](auto& el){ el *= -Mayflower::Config::learningRate; } );
+        m_weightsGrad.forEachElement( [=](auto& el){ el *= - Config::learningRate; } );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.forEachElement( [=](auto& el){ el *= -Mayflower::Config::learningRate; });
+        m_biasesGrad.forEachElement( [=](auto& el){ el *= - Config::learningRate; });
         m_biases = m_biases + m_biasesGrad;
 
         return output;
     }
 
 private:
-    Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }> m_forwardInput;
+    PreviousLayerTensor m_forwardInput;
 
-    Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }> m_forwardActivationInput;;
-    Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }> m_forwardOutput;
+    NextLayerTensor m_forwardActivationInput;
+    NextLayerTensor m_forwardOutput;
 
-    Tensor<float, TensorParams{ params.Inputs, params.Neurons}>        m_weightsGrad;
-    Tensor<float, TensorParams{ params.Inputs, params.Neurons}>        m_weights;
-    Tensor<float, TensorParams{ 1uz, params.Neurons }>                 m_biasesGrad;
-    Tensor<float, TensorParams{ 1uz, params.Neurons }>                 m_biases;
+    Tensor<float, TensorParams{ params.Inputs, params.Neurons}>  m_weightsGrad;
+    Tensor<float, TensorParams{ params.Inputs, params.Neurons}>  m_weights;
+    Tensor<float, TensorParams{ 1uz, params.Neurons }>           m_biasesGrad;
+    Tensor<float, TensorParams{ 1uz, params.Neurons }>           m_biases;
 };

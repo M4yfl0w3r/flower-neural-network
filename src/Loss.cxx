@@ -65,8 +65,8 @@ namespace Loss
             const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>& gradients
         ) 
         {
-            auto labels = oneHotEncoding.operator()<Mayflower::Config::batchSize, 
-                                                    Mayflower::Config::numClasses>(m_trueLabels);
+            auto labels = oneHotEncoding.operator()<Config::batchSize, 
+                                                    Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
             output.negative();
             output.scaleEachValue( 1.0f / static_cast<float>(nextLayer.Inputs) );
@@ -74,7 +74,7 @@ namespace Loss
         }
 
     private:
-        Tensor<std::size_t, TensorParams{ Mayflower::Config::batchSize, 1uz }> m_trueLabels;
+        Tensor<std::size_t, TensorParams{ Config::batchSize, 1uz }> m_trueLabels;
     };
 }
 

@@ -2,7 +2,7 @@ module;
 
 export module config;
 
-export namespace Mayflower::Config 
+export namespace Config 
 {
     inline constexpr auto irisPath     = "assets/iris/iris.data";
     inline constexpr auto dataRows     = 150uz;

@@ -56,6 +56,8 @@ export namespace Dataset
             ++i;
         }
 
+        // TODO: Shuffle data
+
         return std::make_pair( rows, labels );
     }
 }

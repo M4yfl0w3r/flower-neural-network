@@ -3,4 +3,4 @@
 build
 assets
 compile_flags.txt
-
+build.sh

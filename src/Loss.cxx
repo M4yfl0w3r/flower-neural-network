@@ -24,7 +24,7 @@ namespace Loss
         const auto rows         = labels.shape().first;
         const auto predictions  = input->argMax();
         auto correctPredictions = 0uz;
-
+    
         for (auto i : std::ranges::iota_view(0uz, rows))
             if (labels.at(i) == predictions.at(i))
                 ++correctPredictions;

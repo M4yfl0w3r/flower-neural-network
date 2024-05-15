@@ -16,7 +16,5 @@ if ! file_exists "assets/iris/iris.data"; then
     mv "iris.data" assets/iris/
 fi
 
-mkdir -p build
-cmake -G Ninja -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DLIBCXX_BUILD=/home/hope/Sources/llvm-project/build
-ninja -C build
-build/flower_neural_network
+docker-compose up
+

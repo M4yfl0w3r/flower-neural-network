@@ -2,13 +2,12 @@ services:
     app:
         build: .
         volumes:
-            - .:/app
+            - .:/src
         command: >
             bash -c '
-                cd app
+                cd src
                 mkdir -p build
-                cd build
-                cmake -G Ninja -S .. -DCMAKE_CXX_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS=-stdlib=libc++
-                ninja -C .
-                ./flower_neural_network
+                cmake -G Ninja -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DLIBCXX_BUILD=/llvm-project/build
+                ninja -C build
+                build/flower_neural_network
             '

@@ -12,9 +12,6 @@ export struct LayerParams
     std::size_t Neurons;
 };
 
-// TODO: That's bad, will change it later
-using namespace Operators;
-
 export template<LayerParams params, LayerParams prevLayer, LayerParams nextLayer>
 class DenseLayer final
 {

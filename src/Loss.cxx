@@ -9,8 +9,6 @@ export module loss;
 
 namespace Loss 
 {
-    using namespace Operators;
-    
     static constexpr auto oneHotEncoding = []<std::size_t R, std::size_t C>(const auto& labels) 
     {
         auto result = Tensor<float, TensorParams{ R, C }>{ 0.0f };

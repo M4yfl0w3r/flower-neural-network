@@ -69,7 +69,7 @@ namespace Loss
                                                     Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
             output.negative();
-            output.scaleEachValue( 1.0f / static_cast<float>(nextLayer.Inputs) );
+            output.multiplyEachElementBy( 1.0f / static_cast<float>(nextLayer.Inputs) );
             return output;
         }
 

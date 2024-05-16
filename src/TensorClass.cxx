@@ -168,7 +168,7 @@ public:
         }
     }
 
-    constexpr auto scaleEachValue(T value) {
+    constexpr auto multiplyEachElementBy(T value) {
         forEachElement( [=](auto& el){ el *= value; } );
     }
 

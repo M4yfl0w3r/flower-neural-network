@@ -28,9 +28,9 @@ public:
         m_biases  = Tensor<float, TensorParams{ 1uz, params.Neurons } >();
 
         m_weights.fillWithRandomValues({ -1.0f, 1.0f });
-        m_biases.fillWithRandomValues({ 0.0f, 0.0f }); // TODO: For now, all biases = 0
+        m_biases.fillWithRandomValues({ 0.0f, 0.0f });
 
-        m_weights.scaleEachValue(0.01f);
+        m_weights.multiplyEachElementBy(0.01f);
     }
 
     [[nodiscard]] constexpr auto forwardReLU(const PreviousLayerTensor& input)
@@ -77,10 +77,10 @@ public:
         auto m_weightsGrad = inputsT * gradients;
         auto m_biasesGrad  = gradients.sumEachColumn();
 
-        m_weightsGrad.forEachElement( [=](auto& el){ el *= -Config::learningRate; } );
+        m_weightsGrad.multiplyEachElementBy( - Config::learningRate );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.forEachElement( [=](auto& el){ el *= -Config::learningRate; });
+        m_biasesGrad.multiplyEachElementBy( - Config::learningRate );
         m_biases = m_biases + m_biasesGrad;
 
         return output;
@@ -122,10 +122,10 @@ public:
         auto m_weightsGrad  = inputsT * gradients;
         auto m_biasesGrad   = gradients.sumEachColumn();
         
-        m_weightsGrad.forEachElement( [=](auto& el){ el *= - Config::learningRate; } );
+        m_weightsGrad.multiplyEachElementBy( - Config::learningRate );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.forEachElement( [=](auto& el){ el *= - Config::learningRate; });
+        m_biasesGrad.multiplyEachElementBy( - Config::learningRate );
         m_biases = m_biases + m_biasesGrad;
 
         return output;
@@ -137,8 +137,8 @@ private:
     NextLayerTensor m_forwardActivationInput;
     NextLayerTensor m_forwardOutput;
 
-    Tensor<float, TensorParams{ params.Inputs, params.Neurons}>  m_weightsGrad;
-    Tensor<float, TensorParams{ params.Inputs, params.Neurons}>  m_weights;
-    Tensor<float, TensorParams{ 1uz, params.Neurons }>           m_biasesGrad;
-    Tensor<float, TensorParams{ 1uz, params.Neurons }>           m_biases;
+    Tensor<float, TensorParams{ params.Inputs, params.Neurons}> m_weightsGrad;
+    Tensor<float, TensorParams{ params.Inputs, params.Neurons}> m_weights;
+    Tensor<float, TensorParams{ 1uz, params.Neurons }>          m_biasesGrad;
+    Tensor<float, TensorParams{ 1uz, params.Neurons }>          m_biases;
 };

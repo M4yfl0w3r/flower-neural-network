@@ -58,8 +58,7 @@ auto main() -> int
         const auto lossValue = loss.forward< LayerParams{ .Inputs = 10uz, .Neurons = 3uz } >(o2, cols);
         const auto accValue  = accuracy(&o2, cols) * 100uz;
 
-        std::cout << std::setprecision(4) << "Loss = " << lossValue << " | " << 
-                                             "Accuracy = " << accValue << "%\n";
+        std::println("Loss = {0} | Accuracy = {1}%", lossValue.at(0, 0), accValue);
 
         auto o3 = loss.backward< LayerParams{ .Inputs = 10uz, .Neurons = 3uz } >(o2);
         

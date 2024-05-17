@@ -22,7 +22,7 @@ class DenseLayer final
                                                         nextLayer.Neurons}>;
 
 public:
-    explicit constexpr DenseLayer() 
+    constexpr DenseLayer() 
     {
         m_weights = Tensor<float, TensorParams{ params.Inputs, params.Neurons } >();
         m_biases  = Tensor<float, TensorParams{ 1uz, params.Neurons } >();
@@ -77,10 +77,10 @@ public:
         auto m_weightsGrad = inputsT * gradients;
         auto m_biasesGrad  = gradients.sumEachColumn();
 
-        m_weightsGrad.multiplyEachElementBy( - Config::learningRate );
+        m_weightsGrad.multiplyEachElementBy( -Config::learningRate );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.multiplyEachElementBy( - Config::learningRate );
+        m_biasesGrad.multiplyEachElementBy( -Config::learningRate );
         m_biases = m_biases + m_biasesGrad;
 
         return output;
@@ -122,10 +122,10 @@ public:
         auto m_weightsGrad  = inputsT * gradients;
         auto m_biasesGrad   = gradients.sumEachColumn();
         
-        m_weightsGrad.multiplyEachElementBy( - Config::learningRate );
+        m_weightsGrad.multiplyEachElementBy( -Config::learningRate );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.multiplyEachElementBy( - Config::learningRate );
+        m_biasesGrad.multiplyEachElementBy( -Config::learningRate );
         m_biases = m_biases + m_biasesGrad;
 
         return output;

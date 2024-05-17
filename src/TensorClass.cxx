@@ -173,8 +173,8 @@ public:
     }
 
     auto fillWithRandomValues(std::pair<T, T> range) {
-        std::ranges::for_each(m_data, [=](auto& row) { 
-            std::ranges::generate(row, [&](){ return Utilities::randomNumber(range); } );
+        std::ranges::for_each(m_data, [=](auto& row) {
+            std::ranges::generate(row, [&](){ return randomFloat(range); } );
         });
     }
 

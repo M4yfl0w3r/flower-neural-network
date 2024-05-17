@@ -9,32 +9,11 @@ auto main() -> int
 {
     using namespace Loss;
 
-    const auto& [data, labels] = Dataset::readFile(Config::irisPath);
+    auto dataset = Dataset(Config::irisPath);
+    const auto& [data, labels] = dataset.getRandomBatch();
 
-    std::array<std::array<float, 4u>, 10u> batchRows { data.at(0),
-                                                       data.at(1), 
-                                                       data.at(2), 
-                                                       data.at(3), 
-                                                       data.at(4), 
-                                                       data.at(5), 
-                                                       data.at(6), 
-                                                       data.at(7), 
-                                                       data.at(54), 
-                                                       data.at(119) };
-
-    std::array<std::array<std::size_t, 1u>, 10u> batchCols { labels.at(0), 
-                                                             labels.at(1), 
-                                                             labels.at(2), 
-                                                             labels.at(3), 
-                                                             labels.at(4), 
-                                                             labels.at(5), 
-                                                             labels.at(6), 
-                                                             labels.at(7), 
-                                                             labels.at(54),
-                                                             labels.at(119) };
-
-    auto rows = Tensor<float, TensorParams{ .Rows = 10uz, .Cols = 4uz }>{ batchRows };
-    auto cols = Tensor<std::size_t, TensorParams{ .Rows = 10uz, .Cols = 1uz }>{ batchCols };
+    auto rows = Tensor<float, TensorParams{ .Rows = 10uz, .Cols = 4uz }>{ data };
+    auto cols = Tensor<std::size_t, TensorParams{ .Rows = 10uz, .Cols = 1uz }>{ labels };
 
     auto st   = DenseLayer< 
                             LayerParams{ .Inputs = 4uz, .Neurons = 10uz }, // layer params

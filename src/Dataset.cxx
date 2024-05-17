@@ -2,21 +2,21 @@ module;
 
 import std;
 import config;
+import utilities;
 
 export module dataset;
 
 namespace fs = std::filesystem;
+namespace cfg = Config;
 
-export namespace Dataset
+export class Dataset final 
 {
-    auto readFile(const fs::path& path) 
+public:
+    explicit Dataset(const fs::path& path)
     {
         auto data = std::vector<std::string>{};
         auto file = std::ifstream(path);
         auto line = std::string{};
-
-        auto rows   = std::array<std::array<float, Config::dataCols>, Config::dataRows>{};
-        auto labels = std::array<std::array<std::size_t, 1uz>, Config::dataRows>{};
 
         while(std::getline(file, line)) {
             data.push_back(line);
@@ -24,12 +24,12 @@ export namespace Dataset
 
         for (auto i = 0uz; const auto& row : data) 
         {
-            if (i > Config::dataRows - 1uz) break;
+            if (i > cfg::dataRows - 1uz) break;
 
             auto stream  = std::istringstream(row);
             auto field   = std::string{};
             auto label   = 10uz;
-            auto numbers = std::array<float, Config::dataCols>{};
+            auto numbers = std::array<float, cfg::dataCols>{};
 
             auto j = 0uz;
 
@@ -50,14 +50,31 @@ export namespace Dataset
                 ++j;
             }
 
-            rows.at(i) = numbers;
-            labels.at(i).at(0uz) = label;
+            m_data.at(i) = numbers;
+            m_labels.at(i).at(0uz) = label;
 
             ++i;
         }
-
-        // TODO: Shuffle data
-
-        return std::make_pair( rows, labels );
     }
-}
+
+    auto getRandomBatch() const
+    {
+        std::array<std::array<float, cfg::dataCols>, cfg::batchSize> data {};
+        std::array<std::array<std::size_t, 1uz>, cfg::batchSize> labels {};
+
+        for (auto i : std::ranges::iota_view(0uz, cfg::batchSize)) 
+        {
+            auto randomIndex = randomInt({0uz, cfg::dataRows - 1uz});
+
+            data.at(i) = m_data.at(randomIndex);
+            labels.at(i) = m_labels.at(randomIndex);
+        }
+
+        return std::pair( data, labels );
+    }
+
+private:
+    // TODO: Change it to Tensors
+    std::array<std::array<float, cfg::dataCols>, cfg::dataRows> m_data{};
+    std::array<std::array<std::size_t, 1uz>, cfg::dataRows> m_labels{};
+};

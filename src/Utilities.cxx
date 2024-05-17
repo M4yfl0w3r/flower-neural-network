@@ -4,14 +4,18 @@ import std;
 
 export module utilities;
 
-export namespace Utilities
+export [[nodiscard]] auto randomFloat(std::pair<float, float> range)
 {
-    template <typename Type>
-    [[nodiscard]] auto randomNumber(std::pair<Type, Type> range) -> Type 
-    {
-        std::random_device device;
-        std::mt19937 generator(device());
-        std::uniform_real_distribution<Type> distribution(range.first, range.second);
-        return distribution(generator);
-    }
+    std::random_device device;
+    std::mt19937 generator(device());
+    std::uniform_real_distribution<float> distribution(range.first, range.second);
+    return distribution(generator);
+}
+
+export [[nodiscard]] auto randomInt(std::pair<std::size_t, std::size_t> range)
+{
+    std::random_device device;
+    std::mt19937 generator(device());
+    std::uniform_int_distribution<std::size_t> distribution(range.first, range.second);
+    return distribution(generator);
 }

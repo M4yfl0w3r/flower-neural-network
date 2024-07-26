@@ -1,13 +1,14 @@
 services:
-    app:
-        build: .
-        volumes:
-            - .:/src
-        command: >
-            bash -c '
-                cd src
-                mkdir -p build
-                cmake -G Ninja -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DLIBCXX_BUILD=/llvm-project/build
-                ninja -C build
-                build/flower_neural_network
-            '
+  app:
+    build: .
+    volumes:
+      - .:/src
+    command: >
+      bash -c '
+          cd src
+          mkdir -p build
+          cmake -G Ninja -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_CXX_FLAGS=-stdlib=libc++
+          if ninja -C build; then
+              build/flower_neural_network
+          fi
+      '

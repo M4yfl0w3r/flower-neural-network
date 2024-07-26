@@ -9,7 +9,7 @@ export module dataset;
 namespace fs = std::filesystem;
 namespace cfg = Config;
 
-export class Dataset final 
+export class Dataset final
 {
 public:
     explicit Dataset(const fs::path& path)
@@ -22,9 +22,11 @@ public:
             data.push_back(line);
         }
 
-        for (auto i = 0uz; const auto& row : data) 
+        for (auto i = 0uz; const auto& row : data)
         {
-            if (i > cfg::dataRows - 1uz) break;
+            if (i > cfg::dataRows - 1uz) {
+                break;
+            }
 
             auto stream  = std::istringstream(row);
             auto field   = std::string{};
@@ -33,19 +35,23 @@ public:
 
             auto j = 0uz;
 
-            while (std::getline(stream, field, ',')) 
+            while (std::getline(stream, field, ','))
             {
-                if (field == "Iris-setosa")          
+                if (field == "Iris-setosa") {
                     label = 0uz;
+                }
 
-                else if (field == "Iris-versicolor") 
+                else if (field == "Iris-versicolor") {
                     label = 1uz;
+                }
 
-                else if (field == "Iris-virginica")  
+                else if (field == "Iris-virginica") {
                     label = 2uz;
+                }
 
-                else
+                else {
                     numbers.at(j) = std::stof(field);
+                }
 
                 ++j;
             }
@@ -57,21 +63,21 @@ public:
         }
     }
 
-    auto getRandomBatch() const
+    auto GetRandomBatch() const
     {
         std::array<std::array<float, cfg::dataCols>, cfg::batchSize> data {};
         std::array<std::array<std::size_t, 1uz>, cfg::batchSize> labels {};
 
-        for (auto i : std::ranges::iota_view(0uz, cfg::batchSize)) 
-        {
-            auto randomIndex = randomInt({0uz, cfg::dataRows - 1uz});
-
+        for (auto i : std::ranges::iota_view(0uz, cfg::batchSize)) {
+            auto randomIndex = RandomInt({0uz, cfg::dataRows - 1uz});
             data.at(i) = m_data.at(randomIndex);
             labels.at(i) = m_labels.at(randomIndex);
         }
 
         return std::pair( data, labels );
     }
+
+    // TODO: Get not random batch - balanced - each class the same
 
 private:
     // TODO: Change it to Tensors

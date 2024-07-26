@@ -4,7 +4,7 @@ import std;
 
 export module utilities;
 
-export [[nodiscard]] auto randomFloat(std::pair<float, float> range)
+export [[nodiscard]] auto RandomFloat(std::pair<float, float> range)
 {
     std::random_device device;
     std::mt19937 generator(device());
@@ -12,7 +12,7 @@ export [[nodiscard]] auto randomFloat(std::pair<float, float> range)
     return distribution(generator);
 }
 
-export [[nodiscard]] auto randomInt(std::pair<std::size_t, std::size_t> range)
+export [[nodiscard]] auto RandomInt(std::pair<std::size_t, std::size_t> range)
 {
     std::random_device device;
     std::mt19937 generator(device());

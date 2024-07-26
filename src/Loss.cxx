@@ -7,27 +7,30 @@ import dense_layer;
 
 export module loss;
 
-namespace Loss 
+namespace Loss
 {
-    static constexpr auto oneHotEncoding = []<std::size_t R, std::size_t C> [[nodiscard]] (const auto& labels) 
+    static constexpr auto OneHotEncoding = []<std::size_t R, std::size_t C> [[nodiscard]] (const auto& labels)
     {
         auto result = Tensor<float, TensorParams{ R, C }>{ 0.0f };
 
-        for (auto i : std::ranges::iota_view(0uz, R))
-            result.fillAt(i, labels.at(i, 0uz), 1.0f);
+        for (auto i : std::ranges::views::iota(0uz, R)) {
+            result.FillAt(i, labels.At(i, 0uz), 1.0f);
+        }
 
         return result;
     };
 
-    export [[nodiscard]] constexpr auto accuracy(const auto* input, const auto& labels)
+    export [[nodiscard]] constexpr auto Accuracy(const auto* input, const auto& labels)
     {
-        const auto rows         = labels.shape().first;
-        const auto predictions  = input->argMax();
-        auto correctPredictions = 0uz;
+        const auto rows         = labels.Shape().first;
+        const auto predictions  = input->ArgMax();
+        auto correctPredictions = 0;
 
-        for (auto i : std::ranges::iota_view(0uz, rows))
-            if (labels.at(i) == predictions.at(i))
+        for (auto i : std::ranges::views::iota(0uz, rows)) {
+            if (labels.At(i) == predictions.At(i)) {
                 ++correctPredictions;
+            }
+        }
 
         return static_cast<float>(correctPredictions) / static_cast<float>(rows);
     }
@@ -36,8 +39,8 @@ namespace Loss
     {
     public:
         template<LayerParams prevLayer>
-        [[nodiscard]] constexpr auto forward(
-            const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input, 
+        [[nodiscard]] constexpr auto Forward (
+            const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input,
             const Tensor<std::size_t, TensorParams{ prevLayer.Inputs, 1uz }>& trueLabels
         )
         {
@@ -45,30 +48,30 @@ namespace Loss
             auto confidences = Tensor<float, TensorParams{ prevLayer.Inputs, 1uz }>{};
 
             // TODO: Change to std::views::enumerate when available
-            for (auto i = 0uz; auto& row : input.data()) 
+            for (auto i = 0uz; auto& row : input.Data())
             {
-                confidences.fillAt(i, 0uz, row.at(trueLabels.at(i)));
+                confidences.FillAt(i, 0uz, row.at(trueLabels.At(i)));
                 ++i;
             }
- 
+
             static constexpr auto minFloat = std::numeric_limits<float>::min();
 
-            confidences.clip(minFloat, 1.0f - minFloat); // Clip to prevent log(0.0f)
-            confidences.log();
-            confidences.negative();
+            confidences.Clip(minFloat, 1.0f - minFloat); // Clip to prevent log(0.0f)
+            confidences.Log();
+            confidences.Negative();
 
-            return confidences.mean();
+            return confidences.Mean();
         }
 
         template<LayerParams nextLayer>
-        [[nodiscard]] constexpr auto backward(
+        [[nodiscard]] constexpr auto Backward (
             const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>& gradients
-        ) 
+        )
         {
-            auto labels = oneHotEncoding.operator()<Config::batchSize, Config::numClasses>(m_trueLabels);
+            auto labels = OneHotEncoding.operator()<Config::batchSize, Config::numClasses>(m_trueLabels);
             auto output = labels / gradients;
-            output.negative();
-            output.multiplyEachElementBy( 1.0f / static_cast<float>(nextLayer.Inputs) );
+            output.Negative();
+            output.MultiplyEachElementBy( 1.0f / static_cast<float>(nextLayer.Inputs) );
             return output;
         }
 
@@ -76,4 +79,3 @@ namespace Loss
         Tensor<std::size_t, TensorParams{ Config::batchSize, 1uz }> m_trueLabels;
     };
 }
-

@@ -15,117 +15,114 @@ export struct LayerParams
 export template<LayerParams params, LayerParams prevLayer, LayerParams nextLayer>
 class DenseLayer final
 {
-    using PreviousLayerTensor = Tensor<float, TensorParams{ prevLayer.Inputs, 
+    using PreviousLayerTensor = Tensor<float, TensorParams{ prevLayer.Inputs,
                                                             prevLayer.Neurons }>;
-    
-    using NextLayerTensor = Tensor<float, TensorParams{ nextLayer.Inputs, 
+
+    using NextLayerTensor = Tensor<float, TensorParams{ nextLayer.Inputs,
                                                         nextLayer.Neurons}>;
 
 public:
-    constexpr DenseLayer() 
+    constexpr DenseLayer()
     {
         m_weights = Tensor<float, TensorParams{ params.Inputs, params.Neurons } >();
         m_biases  = Tensor<float, TensorParams{ 1uz, params.Neurons } >();
 
-        m_weights.fillWithRandomValues({ -1.0f, 1.0f });
-        m_biases.fillWithRandomValues({ 0.0f, 0.0f });
+        m_weights.FillWithRandomValues({ -1.0f, 1.0f });
+        m_biases.FillWithRandomValues({ 0.0f, 0.0f });
 
-        m_weights.multiplyEachElementBy(0.01f);
+        m_weights.MultiplyEachElementBy(0.01f);
     }
 
-    [[nodiscard]] constexpr auto forwardReLU(const PreviousLayerTensor& input)
+    [[nodiscard]] constexpr auto ForwardReLU(const PreviousLayerTensor& input)
     {
         m_forwardInput = input;
         auto output    = (input * m_weights) + m_biases;
-                
+
         m_forwardActivationInput = output;
-        output.relu();
-        
+        output.ReLU();
+
         m_forwardOutput = output;
 
         return output;
     }
 
-    [[nodiscard]] constexpr auto forwardSoftmax(const PreviousLayerTensor& input)
+    [[nodiscard]] constexpr auto ForwardSoftmax(const PreviousLayerTensor& input)
     {
         auto output = (input * m_weights) + m_biases;
-            
-        output.subtractMaxFromEachRow();
-        auto expValues    = output.exp();
-        auto expValuesSum = expValues.sumEachRow();
+        output.SubtractMaxFromEachRow();
+        auto expValues    = output.Exp();
+        auto expValuesSum = expValues.SumEachRow();
         output = expValues / expValuesSum;
-    
         m_forwardInput = input;
         m_forwardOutput = output;
 
         return output;
     }
 
-    [[nodiscard]] constexpr auto backwardReLU(const NextLayerTensor& gradients)
+    [[nodiscard]] constexpr auto BackwardReLU(const NextLayerTensor& gradients)
     {
         auto result = NextLayerTensor{ gradients };
 
         static constexpr auto lessThanZero = [](auto& el) { return el <= 0.0f; };
-        auto lessThanZeroMask = m_forwardActivationInput.where(lessThanZero);
+        auto lessThanZeroMask = m_forwardActivationInput.Where(lessThanZero);
 
-        result.mask(lessThanZeroMask, 0.0f);
+        result.Mask(lessThanZeroMask, 0.0f);
 
-        const auto weightsT = transpose(m_weights);
-        const auto inputsT  = transpose(m_forwardInput);
+        const auto weightsT = Transpose(m_weights);
+        const auto inputsT  = Transpose(m_forwardInput);
 
         auto output        = result * weightsT;
         auto m_weightsGrad = inputsT * gradients;
-        auto m_biasesGrad  = gradients.sumEachColumn();
+        auto m_biasesGrad  = gradients.SumEachColumn();
 
-        m_weightsGrad.multiplyEachElementBy( -Config::learningRate );
+        m_weightsGrad.MultiplyEachElementBy( -Config::learningRate );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.multiplyEachElementBy( -Config::learningRate );
+        m_biasesGrad.MultiplyEachElementBy( -Config::learningRate );
         m_biases = m_biases + m_biasesGrad;
 
         return output;
     }
 
-    [[nodiscard]] constexpr auto backwardSoftmax(const NextLayerTensor& gradients)
+    [[nodiscard]] constexpr auto BackwardSoftmax(const NextLayerTensor& gradients)
     {
         auto result = NextLayerTensor{ 0.0f };
+        auto index  = 0;
 
-        for (auto index = 0uz; 
-            const auto& [output, gradient] : std::views::zip(m_forwardOutput.data(), gradients.data())) 
-        {
-            auto jacobian = Tensor<float, TensorParams{ Config::numClasses, 
+        for (const auto& [output, gradient] : std::views::zip(m_forwardOutput.Data(), gradients.Data())) {
+            auto jacobian = Tensor<float, TensorParams{ Config::numClasses,
                                                         Config::numClasses }>{};
-            auto [R, C]   = jacobian.shape();
+            auto [R, C]   = jacobian.Shape();
 
             for (auto i : std::ranges::iota_view(0uz, R)) {
                 for (auto j : std::ranges::iota_view(0uz, C)) {
                     auto ith_output = output.at(i);
                     if (i == j)
-                        jacobian.fillAt(i, j, ith_output * (1.0f - ith_output));
-                    else 
-                        jacobian.fillAt(i, j, - ith_output * output.at(j));
+                        jacobian.FillAt(i, j, ith_output * (1.0f - ith_output));
+                    else
+                        jacobian.FillAt(i, j, - ith_output * output.at(j));
                 }
             }
 
             auto gradTensor   = Tensor1D(gradient);
-            auto gradTensorT  = transpose(gradTensor);
+            auto gradTensorT  = Transpose(gradTensor);
             auto dotProduct   = jacobian * gradTensorT;
-            auto untransposed = transpose(dotProduct);
+            auto untransposed = Transpose(dotProduct);
 
-            result.exchangeRow(index++, untransposed.data());
+            result.ExchangeRow(index++, untransposed.Data());
         }
 
-        const auto weightsT = transpose(m_weights);
-        const auto inputsT  = transpose(m_forwardInput);
+        const auto weightsT = Transpose(m_weights);
+        const auto inputsT  = Transpose(m_forwardInput);
 
         auto output         = result * weightsT;
         auto m_weightsGrad  = inputsT * gradients;
-        auto m_biasesGrad   = gradients.sumEachColumn();
-        
-        m_weightsGrad.multiplyEachElementBy( -Config::learningRate );
+        auto m_biasesGrad   = gradients.SumEachColumn();
+
+        m_weightsGrad.MultiplyEachElementBy( -Config::learningRate );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.multiplyEachElementBy( -Config::learningRate );
+        m_biasesGrad.MultiplyEachElementBy( -Config::learningRate );
         m_biases = m_biases + m_biasesGrad;
 
         return output;

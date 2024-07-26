@@ -9,9 +9,6 @@ set( CMAKE_CXX_EXTENSIONS ON )
 
 project( flower_neural_network LANGUAGES CXX )
 
-# include(cmake/ModulesLocalBuild.cmake)
-# include(cmake/ProjectModules.cmake)
-
 add_library( neuron )
 
 target_sources( neuron

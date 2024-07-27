@@ -9,12 +9,12 @@ export module loss;
 
 namespace Loss
 {
-    static constexpr auto OneHotEncoding = []<std::size_t R, std::size_t C> [[nodiscard]] (const auto& labels)
+    static constexpr auto OneHotEncoding = []<int R, int C> [[nodiscard]] (const auto& labels)
     {
-        auto result = Tensor<float, TensorParams{ R, C }>{ 0.0f };
+        auto result = Tensor<float, { R, C }>{ 0.0f };
 
-        for (auto i : std::ranges::views::iota(0uz, R)) {
-            result.FillAt(i, labels.At(i, 0uz), 1.0f);
+        for (auto i : std::ranges::views::iota(0, R)) {
+            result.FillAt(i, labels.At(i, 0), 1.0f);
         }
 
         return result;
@@ -26,7 +26,7 @@ namespace Loss
         const auto predictions  = input->ArgMax();
         auto correctPredictions = 0;
 
-        for (auto i : std::ranges::views::iota(0uz, rows)) {
+        for (auto i : std::ranges::views::iota(0, rows)) {
             if (labels.At(i) == predictions.At(i)) {
                 ++correctPredictions;
             }
@@ -40,17 +40,16 @@ namespace Loss
     public:
         template<LayerParams prevLayer>
         [[nodiscard]] constexpr auto Forward (
-            const Tensor<float, TensorParams{ prevLayer.Inputs, prevLayer.Neurons }>& input,
-            const Tensor<std::size_t, TensorParams{ prevLayer.Inputs, 1uz }>& trueLabels
+            const Tensor<float, { prevLayer.Inputs, prevLayer.Neurons }>& input,
+            const Tensor<int, { prevLayer.Inputs, 1 }>& trueLabels
         )
         {
             m_trueLabels     = trueLabels;
-            auto confidences = Tensor<float, TensorParams{ prevLayer.Inputs, 1uz }>{};
+            auto confidences = Tensor<float, { prevLayer.Inputs, 1 }>{};
 
             // TODO: Change to std::views::enumerate when available
-            for (auto i = 0uz; auto& row : input.Data())
-            {
-                confidences.FillAt(i, 0uz, row.at(trueLabels.At(i)));
+            for (auto i = 0; auto& row : input.Data()) {
+                confidences.FillAt(i, 0, row.at(trueLabels.At(i)));
                 ++i;
             }
 
@@ -65,7 +64,7 @@ namespace Loss
 
         template<LayerParams nextLayer>
         [[nodiscard]] constexpr auto Backward (
-            const Tensor<float, TensorParams{ nextLayer.Inputs, nextLayer.Neurons }>& gradients
+            const Tensor<float, { nextLayer.Inputs, nextLayer.Neurons }>& gradients
         )
         {
             auto labels = OneHotEncoding.operator()<Config::batchSize, Config::numClasses>(m_trueLabels);
@@ -76,6 +75,6 @@ namespace Loss
         }
 
     private:
-        Tensor<std::size_t, TensorParams{ Config::batchSize, 1uz }> m_trueLabels;
+        Tensor<int, { Config::batchSize, 1 }> m_trueLabels;
     };
 }

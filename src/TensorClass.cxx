@@ -5,8 +5,8 @@ import utilities;
 
 export struct TensorParams
 {
-    std::size_t Rows;
-    std::size_t Cols;
+    int Rows;
+    int Cols;
 };
 
 export template<typename T, TensorParams params>
@@ -19,29 +19,35 @@ public:
         : m_data{ data }
     {}
 
-    explicit constexpr Tensor(T value) {
+    explicit constexpr Tensor(T value)
+    {
         Fill(value);
     }
 
-    [[nodiscard]] constexpr auto At(std::size_t x, std::size_t y) const {
+    [[nodiscard]] constexpr auto At(int x, int y) const
+    {
         return m_data.at(x).at(y);
     }
 
-    [[nodiscard]] constexpr auto At(std::size_t x) const {
-        static_assert(params.Cols == 1uz);
-        return m_data.at(x).at(0uz);
+    [[nodiscard]] constexpr auto At(int x) const
+    {
+        static_assert(params.Cols == 1);
+        return m_data.at(x).at(0);
     }
 
-    [[nodiscard]] constexpr auto Data() const {
+    [[nodiscard]] constexpr auto Data() const
+    {
         return m_data;
     }
 
-    [[nodiscard]] constexpr auto Get() const {
-        static_assert(params.Rows == 1uz && params.Cols == 1uz);
-        return m_data.at(0uz).at(0uz);
+    [[nodiscard]] constexpr auto Get() const
+    {
+        static_assert(params.Rows == 1 && params.Cols == 1);
+        return m_data.at(0).at(0);
     }
 
-    [[nodiscard]] constexpr auto Mean() const {
+    [[nodiscard]] constexpr auto Mean() const
+    {
         auto sum = T{};
         for (const auto& row : m_data) {
             sum += std::accumulate(std::begin(row), std::end(row), T{});
@@ -49,7 +55,8 @@ public:
         return Tensor1D(sum / (params.Rows * params.Cols));
     }
 
-    [[nodiscard]] constexpr auto SumAllElements() const {
+    [[nodiscard]] constexpr auto SumAllElements() const
+    {
         auto sum = T{};
         for (const auto& row : m_data) {
             sum += std::accumulate(std::begin(row), std::end(row), T{});
@@ -57,65 +64,73 @@ public:
         return Tensor1D(sum);
     }
 
-    [[nodiscard]] constexpr auto SumEachRow() const {
-        auto result = Tensor<T, TensorParams{ params.Rows, 1uz}>{};
+    [[nodiscard]] constexpr auto SumEachRow() const
+    {
+        auto result = Tensor<T, { params.Rows, 1 }>{};
 
-        for (auto i = 0uz; auto& row : m_data) {
+        // TODO: enumerate
+        for (auto i = 0; auto& row : m_data) {
             const auto rowSum = std::accumulate(std::begin(row), std::end(row), T{});
-            result.FillAt(i, 0uz, rowSum);
+            result.FillAt(i, 0, rowSum);
             ++i;
         }
 
         return result;
     }
 
-    [[nodiscard]] constexpr auto SumEachColumn() const {
-        auto result = std::array<std::array<T, params.Cols>, 1uz>{ T{} };
+    [[nodiscard]] constexpr auto SumEachColumn() const
+    {
+        auto result = std::array<std::array<T, params.Cols>, 1>{ T{} };
 
         for (const auto& row : m_data) {
-            for (auto i = 0u; const auto& el : row) {
-                result.at(0uz).at(i) += el;
+            for (auto i = 0; const auto& el : row) {
+                result.at(0).at(i) += el;
                 ++i;
             }
         }
 
-        return Tensor<T, TensorParams{ 1uz, params.Cols }>(result);
+        return Tensor<T, { 1, params.Cols }>(result);
     }
 
-    [[nodiscard]] constexpr auto Exp() {
+    [[nodiscard]] constexpr auto Exp()
+    {
         auto result = Tensor<T, params>{m_data};
         result.ForEachElement( [](auto& el){ el = std::exp(el); });
         return result;
     }
 
-    [[nodiscard]] constexpr auto Shape() const {
+    [[nodiscard]] constexpr auto Shape() const
+    {
         return std::pair { params.Rows, params.Cols };
     }
 
-    [[nodiscard]] constexpr auto ArgMax() const {
-        auto result = Tensor<T, TensorParams{params.Rows, 1uz}>{};
+    [[nodiscard]] constexpr auto ArgMax() const
+    {
+        auto result = Tensor<T, {params.Rows, 1}>{};
 
-        for (auto i = 0uz; const auto& row : m_data) {
+        // TODO: enumerate
+        for (auto i = 0; const auto& row : m_data) {
             auto max = std::ranges::max_element(row);
             auto arg = std::ranges::distance(std::begin(row), max);
-            result.FillAt(i, 0uz, arg);
+            result.FillAt(i, 0, arg);
             ++i;
         }
 
         return result;
     }
 
-    [[nodiscard]] constexpr auto Where(std::function<bool(T&)> what) {
+    [[nodiscard]] constexpr auto Where(std::function<bool(T&)> what)
+    {
         // Get indices that satisfy a condition specified by the 'what' function.
 
-        std::array<std::array<std::size_t, params.Cols>, params.Rows> mask{ 0uz };
+        std::array<std::array<int, params.Cols>, params.Rows> mask{ 0 };
 
-        for (auto i = 0uz; auto& row : m_data) {
+        for (auto i = 0; auto& row : m_data) {
             auto it = std::find_if(std::begin(row), std::end(row), what);
 
             while (it != std::end(row)) {
                 auto j = std::distance(std::begin(row), it);
-                mask.at(i).at(j) = 1uz;
+                mask.at(i).at(j) = 1;
                 it = std::find_if(std::next(it), std::end(row), what);
             }
 
@@ -125,9 +140,10 @@ public:
         return mask;
     }
 
-    constexpr auto Mask(std::array<std::array<std::size_t, params.Cols>, params.Rows> mask, T maskValue) {
-        for (auto i : std::ranges::iota_view(0uz, params.Rows)) {
-            for (auto j : std::ranges::iota_view(0uz, params.Cols)) {
+    constexpr auto Mask(std::array<std::array<int, params.Cols>, params.Rows> mask, T maskValue)
+    {
+        for (auto i : std::ranges::iota_view(0, params.Rows)) {
+            for (auto j : std::ranges::iota_view(0, params.Cols)) {
                 if (mask.at(i).at(j) == 1) {
                     m_data.at(i).at(j) = maskValue;
                 }
@@ -135,36 +151,45 @@ public:
         }
     }
 
-    constexpr auto ForEachElement(std::function<void(T&)> func) {
-        for (auto& row : m_data)
+    constexpr auto ForEachElement(std::function<void(T&)> func)
+    {
+        for (auto& row : m_data) {
             std::ranges::for_each(row, func);
+        }
     }
 
-    constexpr auto Log() {
+    constexpr auto Log()
+    {
         ForEachElement([](auto& el){ el = std::log(el); });
     }
 
-    constexpr auto Clip(T min, T max)  {
+    constexpr auto Clip(T min, T max)
+    {
         ForEachElement([=](auto& el){ el = std::clamp(el, min, max); });
     }
 
-    constexpr auto FillAt(std::size_t i, std::size_t j, T value) {
+    constexpr auto FillAt(int i, int j, T value)
+    {
         m_data.at(i).at(j) = value;
     }
 
-    constexpr auto Negative() {
+    constexpr auto Negative()
+    {
         ForEachElement([](auto& el){ el != T{} ? el = -el : el = T{};});
     }
 
-    constexpr auto Fill(T value) {
+    constexpr auto Fill(T value)
+    {
         std::ranges::for_each(m_data, [=](auto& row) { std::ranges::fill(row, value); });
     }
 
-    constexpr auto ReLU() {
+    constexpr auto ReLU()
+    {
         ForEachElement( [](auto& el){ el = std::max(T{}, el); });
     }
 
-    constexpr auto SubtractMaxFromEachRow() {
+    constexpr auto SubtractMaxFromEachRow()
+    {
         for (auto& row : m_data) {
             const auto max = *std::ranges::max_element(std::begin(row), std::end(row));
             for (auto& el : row) {
@@ -173,29 +198,34 @@ public:
         }
     }
 
-    constexpr auto MultiplyEachElementBy(T value) {
+    constexpr auto MultiplyEachElementBy(T value)
+    {
         ForEachElement( [=](auto& el){ el *= value; } );
     }
 
-    auto FillWithRandomValues(std::pair<T, T> range) {
+    auto FillWithRandomValues(std::pair<T, T> range)
+    {
         std::ranges::for_each(m_data, [=](auto& row) {
             std::ranges::generate(row, [&](){ return RandomFloat(range); } );
         });
     }
 
     // TODO: error: use of undeclared identifier 'assert' - no lib?
-    constexpr auto DivideRowBy(std::size_t row, T value) {
+    constexpr auto DivideRowBy(int row, T value)
+    {
         for (auto& el : m_data.at(row)) {
             el /= value;
         }
     }
 
     // TODO: Should accept 1D array
-    constexpr auto ExchangeRow(std::size_t row, std::array<std::array<T, params.Cols>, 1uz> data) {
-        m_data.at(row) = data.at(0uz);
+    constexpr auto ExchangeRow(int row, std::array<std::array<T, params.Cols>, 1> data)
+    {
+        m_data.at(row) = data.at(0);
     }
 
-    constexpr auto Print() const {
+    constexpr auto Print() const
+    {
         for (const auto& row : m_data) {
             for (const auto& el : row) {
                 std::cout << el << "  ";
@@ -204,21 +234,25 @@ public:
         }
     }
 
-    constexpr auto PrintShape() const {
+    constexpr auto PrintShape() const
+    {
         std::cout << "Shape = (" << params.Rows << ", " << params.Cols << ")\n";
     }
 
-    constexpr auto operator- () {
+    constexpr auto operator- ()
+    {
         this->Negative();
     }
 
-    constexpr auto operator/ (T value) {
+    constexpr auto operator/ (T value)
+    {
         ForEachElement( [=](auto& el){ el /= value; } );
     }
 
-    friend constexpr auto& operator<< (std::ostream& stream, const Tensor& tensor) {
-        if constexpr (params.Rows == 1uz && params.Cols == 1uz) {
-            stream << tensor.at(0uz, 0uz);
+    friend constexpr auto& operator<< (std::ostream& stream, const Tensor& tensor)
+    {
+        if constexpr (params.Rows == 1 && params.Cols == 1) {
+            stream << tensor.at(0, 0);
         }
         else {
             for (const auto& row : tensor.Data()) {
@@ -236,8 +270,9 @@ public:
     }
 
 private:
-    constexpr auto Tensor1D(auto value) const {
-        return Tensor<T, TensorParams{ 1uz, 1uz }>(std::array<std::array<T, 1uz>, 1uz>({ value }));
+    constexpr auto Tensor1D(auto value) const
+    {
+        return Tensor<T, { 1, 1 }>(std::array<std::array<T, 1>, 1>({ value }));
     }
 
     std::array<std::array<T, params.Cols>, params.Rows> m_data;

@@ -8,24 +8,21 @@ export module dense_layer;
 
 export struct LayerParams
 {
-    std::size_t Inputs;
-    std::size_t Neurons;
+    int Inputs;
+    int Neurons;
 };
 
 export template<LayerParams params, LayerParams prevLayer, LayerParams nextLayer>
 class DenseLayer final
 {
-    using PreviousLayerTensor = Tensor<float, TensorParams{ prevLayer.Inputs,
-                                                            prevLayer.Neurons }>;
-
-    using NextLayerTensor = Tensor<float, TensorParams{ nextLayer.Inputs,
-                                                        nextLayer.Neurons}>;
+    using PreviousLayerTensor = Tensor<float, { prevLayer.Inputs, prevLayer.Neurons }>;
+    using NextLayerTensor = Tensor<float, { nextLayer.Inputs, nextLayer.Neurons}>;
 
 public:
     constexpr DenseLayer()
     {
-        m_weights = Tensor<float, TensorParams{ params.Inputs, params.Neurons } >();
-        m_biases  = Tensor<float, TensorParams{ 1uz, params.Neurons } >();
+        m_weights = Tensor<float, { params.Inputs, params.Neurons } >();
+        m_biases  = Tensor<float, { 1, params.Neurons } >();
 
         m_weights.FillWithRandomValues({ -1.0f, 1.0f });
         m_biases.FillWithRandomValues({ 0.0f, 0.0f });
@@ -90,12 +87,11 @@ public:
         auto index  = 0;
 
         for (const auto& [output, gradient] : std::views::zip(m_forwardOutput.Data(), gradients.Data())) {
-            auto jacobian = Tensor<float, TensorParams{ Config::numClasses,
-                                                        Config::numClasses }>{};
-            auto [R, C]   = jacobian.Shape();
+            auto jacobian = Tensor<float, { Config::numClasses, Config::numClasses }>{};
+            const auto [R, C] = jacobian.Shape();
 
-            for (auto i : std::ranges::iota_view(0uz, R)) {
-                for (auto j : std::ranges::iota_view(0uz, C)) {
+            for (auto i : std::ranges::iota_view(0, R)) {
+                for (auto j : std::ranges::iota_view(0, C)) {
                     auto ith_output = output.at(i);
                     if (i == j)
                         jacobian.FillAt(i, j, ith_output * (1.0f - ith_output));
@@ -104,7 +100,7 @@ public:
                 }
             }
 
-            auto gradTensor   = Tensor1D(gradient);
+            auto gradTensor   = Tensor<float, { 1, 3 }>( std::array<std::array<float, 3>, 1>{ gradient });
             auto gradTensorT  = Transpose(gradTensor);
             auto dotProduct   = jacobian * gradTensorT;
             auto untransposed = Transpose(dotProduct);
@@ -134,8 +130,8 @@ private:
     NextLayerTensor m_forwardActivationInput;
     NextLayerTensor m_forwardOutput;
 
-    Tensor<float, TensorParams{ params.Inputs, params.Neurons}> m_weightsGrad;
-    Tensor<float, TensorParams{ params.Inputs, params.Neurons}> m_weights;
-    Tensor<float, TensorParams{ 1uz, params.Neurons }>          m_biasesGrad;
-    Tensor<float, TensorParams{ 1uz, params.Neurons }>          m_biases;
+    Tensor<float, { params.Inputs, params.Neurons}> m_weightsGrad;
+    Tensor<float, { params.Inputs, params.Neurons}> m_weights;
+    Tensor<float, { 1, params.Neurons }>            m_biasesGrad;
+    Tensor<float, { 1, params.Neurons }>            m_biases;
 };

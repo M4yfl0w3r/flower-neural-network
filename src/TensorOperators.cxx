@@ -11,8 +11,8 @@ export template<typename T, TensorParams params>
 {
     auto result = Tensor<T, params>{};
 
-    for (auto i : std::ranges::iota_view(0uz, params.Rows))
-        for (auto j : std::ranges::iota_view(0uz, params.Cols))
+    for (auto i : std::ranges::iota_view(0, params.Rows))
+        for (auto j : std::ranges::iota_view(0, params.Cols))
             result.FillAt(i, j, one.At(i, j) - other.At(i, j));
 
     return result;
@@ -27,8 +27,8 @@ export template<typename T, TensorParams params>
 {
     auto result = Tensor<T, params>{};
 
-    for (auto i : std::ranges::iota_view(0uz, params.Rows))
-        for (auto j : std::ranges::iota_view(0uz, params.Cols))
+    for (auto i : std::ranges::iota_view(0, params.Rows))
+        for (auto j : std::ranges::iota_view(0, params.Cols))
             result.FillAt(i, j, one.At(i, j) + other.At(i, j));
 
     return result;
@@ -41,13 +41,13 @@ export template<typename T, TensorParams a, TensorParams b>
     const Tensor<T, b>& other   // Biases
 )
 {
-    static_assert(a.Cols == b.Cols && b.Rows == 1uz);
+    static_assert(a.Cols == b.Cols && b.Rows == 1);
 
     auto result = Tensor<T, a>{};
 
-    for (auto i : std::ranges::iota_view(0uz, a.Rows)) {
-        for (auto j : std::ranges::iota_view(0uz, a.Cols)) {
-            result.FillAt(i, j, one.At(i, j) + other.At(0uz, j));
+    for (auto i : std::ranges::iota_view(0, a.Rows)) {
+        for (auto j : std::ranges::iota_view(0, a.Cols)) {
+            result.FillAt(i, j, one.At(i, j) + other.At(0, j));
         }
     }
 
@@ -73,13 +73,13 @@ export template<typename T, TensorParams a, TensorParams b>
 {
     static_assert(a.Cols == b.Rows);
 
-    auto result = Tensor<T, TensorParams{ a.Rows, b.Cols } >{};
+    auto result = Tensor<T, { a.Rows, b.Cols } >{};
 
     // TODO: Strassen algorithm
-    for (auto i : std::ranges::iota_view(0uz, a.Rows)) {
-        for (auto j : std::ranges::iota_view(0uz, b.Cols)) {
+    for (auto i : std::ranges::iota_view(0, a.Rows)) {
+        for (auto j : std::ranges::iota_view(0, b.Cols)) {
             T sum{};
-            for (auto k : std::ranges::iota_view(0uz, a.Cols)) {
+            for (auto k : std::ranges::iota_view(0, a.Cols)) {
                 sum += one.At(i, k) * other.At(k, j);
             }
             result.FillAt(i, j, sum);
@@ -95,23 +95,23 @@ export template<typename T, TensorParams a, TensorParams b>
     const Tensor<T, b>& other
 )
 {
-    if constexpr (b.Rows == 1uz && b.Cols == 1uz) {
+    if constexpr (b.Rows == 1 && b.Cols == 1) {
         auto result = one;
-        result.ForEachElement([&other](auto& el){ el /= other.At(0uz, 0uz); });
+        result.ForEachElement( [&other](auto& el){ el /= other.At(0, 0); } );
         return result;
     }
 
-    if constexpr (a.Rows == 1uz && b.Rows == 1uz && a.Cols == b.Cols) {
+    if constexpr (a.Rows == 1 && b.Rows == 1 && a.Cols == b.Cols) {
         // TODO: Better ifs
         auto result = one;
-        result.ForEachElement([&other](auto& el){ el /= other.At(0uz, 0uz); });
+        result.ForEachElement([&other](auto& el){ el /= other.At(0, 0); });
         return result;
     }
 
     // Divide each row by the corresponding value
-    if constexpr (a.Rows == b.Rows && b.Cols == 1uz) {
+    if constexpr (a.Rows == b.Rows && b.Cols == 1) {
         auto result = Tensor<T, a>(one.Data());
-        for (auto i = 0u; i < a.Rows; ++i) {
+        for (auto i = 0; i < a.Rows; ++i) {
             result.DivideRowBy(i, other.At(i));
         }
         return result;
@@ -137,8 +137,8 @@ export template<typename T, TensorParams params>
 {
     auto result = Tensor<T, params>{};
 
-    for (auto i : std::ranges::iota_view(0uz, params.Rows)) {
-        for (auto j : std::ranges::iota_view(0uz, params.Cols)) {
+    for (auto i : std::ranges::iota_view(0, params.Rows)) {
+        for (auto j : std::ranges::iota_view(0, params.Cols)) {
             result.FillAt(i, j, one.At(i, j) / other.At(i, j));
         }
     }

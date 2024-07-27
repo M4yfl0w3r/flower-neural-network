@@ -22,31 +22,31 @@ public:
             data.push_back(line);
         }
 
-        for (auto i = 0uz; const auto& row : data)
+        for (auto i = 0; const auto& row : data)
         {
-            if (i > cfg::dataRows - 1uz) {
+            if (i > cfg::dataRows - 1) {
                 break;
             }
 
             auto stream  = std::istringstream(row);
             auto field   = std::string{};
-            auto label   = 10uz;
+            auto label   = 10;
             auto numbers = std::array<float, cfg::dataCols>{};
 
-            auto j = 0uz;
+            auto j = 0;
 
             while (std::getline(stream, field, ','))
             {
                 if (field == "Iris-setosa") {
-                    label = 0uz;
+                    label = 0;
                 }
 
                 else if (field == "Iris-versicolor") {
-                    label = 1uz;
+                    label = 1;
                 }
 
                 else if (field == "Iris-virginica") {
-                    label = 2uz;
+                    label = 2;
                 }
 
                 else {
@@ -57,7 +57,7 @@ public:
             }
 
             m_data.at(i) = numbers;
-            m_labels.at(i).at(0uz) = label;
+            m_labels.at(i).at(0) = label;
 
             ++i;
         }
@@ -66,10 +66,10 @@ public:
     auto GetRandomBatch() const
     {
         std::array<std::array<float, cfg::dataCols>, cfg::batchSize> data {};
-        std::array<std::array<std::size_t, 1uz>, cfg::batchSize> labels {};
+        std::array<std::array<int, 1>, cfg::batchSize> labels {};
 
-        for (auto i : std::ranges::iota_view(0uz, cfg::batchSize)) {
-            auto randomIndex = RandomInt({0uz, cfg::dataRows - 1uz});
+        for (auto i : std::ranges::iota_view(0, cfg::batchSize)) {
+            auto randomIndex = RandomInt( {0, cfg::dataRows - 1} );
             data.at(i) = m_data.at(randomIndex);
             labels.at(i) = m_labels.at(randomIndex);
         }
@@ -82,5 +82,5 @@ public:
 private:
     // TODO: Change it to Tensors
     std::array<std::array<float, cfg::dataCols>, cfg::dataRows> m_data{};
-    std::array<std::array<std::size_t, 1uz>, cfg::dataRows> m_labels{};
+    std::array<std::array<int, 1>, cfg::dataRows> m_labels{};
 };

@@ -72,10 +72,10 @@ public:
         auto m_weightsGrad = inputsT * gradients;
         auto m_biasesGrad  = gradients.SumEachColumn();
 
-        m_weightsGrad.MultiplyEachElementBy( -Config::learningRate );
+        m_weightsGrad.MultiplyEachElementBy( -Config::LearningRate );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.MultiplyEachElementBy( -Config::learningRate );
+        m_biasesGrad.MultiplyEachElementBy( -Config::LearningRate );
         m_biases = m_biases + m_biasesGrad;
 
         return output;
@@ -87,7 +87,7 @@ public:
         auto index  = 0;
 
         for (const auto& [output, gradient] : std::views::zip(m_forwardOutput.Data(), gradients.Data())) {
-            auto jacobian = Tensor<float, { Config::numClasses, Config::numClasses }>{};
+            auto jacobian = Tensor<float, { Config::NumClasses, Config::NumClasses }>{};
             const auto [R, C] = jacobian.Shape();
 
             for (auto i : std::ranges::iota_view(0, R)) {
@@ -115,10 +115,10 @@ public:
         auto m_weightsGrad  = inputsT * gradients;
         auto m_biasesGrad   = gradients.SumEachColumn();
 
-        m_weightsGrad.MultiplyEachElementBy( -Config::learningRate );
+        m_weightsGrad.MultiplyEachElementBy( -Config::LearningRate );
         m_weights = m_weights + m_weightsGrad;
 
-        m_biasesGrad.MultiplyEachElementBy( -Config::learningRate );
+        m_biasesGrad.MultiplyEachElementBy( -Config::LearningRate );
         m_biases = m_biases + m_biasesGrad;
 
         return output;

@@ -48,7 +48,7 @@ namespace Loss
             auto confidences = Tensor<float, { prevLayer.Inputs, 1 }>{};
 
             // TODO: Change to std::views::enumerate when available
-            for (auto i = 0; auto& row : input.Data()) {
+            for (auto i = 0; const auto& row : input.Data()) {
                 confidences.FillAt(i, 0, row.at(trueLabels.At(i)));
                 ++i;
             }
@@ -67,7 +67,7 @@ namespace Loss
             const Tensor<float, { nextLayer.Inputs, nextLayer.Neurons }>& gradients
         )
         {
-            auto labels = OneHotEncoding.operator()<Config::batchSize, Config::numClasses>(m_trueLabels);
+            auto labels = OneHotEncoding.operator()<Config::BatchSize, Config::NumClasses>(m_trueLabels);
             auto output = labels / gradients;
             output.Negative();
             output.MultiplyEachElementBy( 1.0f / static_cast<float>(nextLayer.Inputs) );
@@ -75,6 +75,6 @@ namespace Loss
         }
 
     private:
-        Tensor<int, { Config::batchSize, 1 }> m_trueLabels;
+        Tensor<int, { Config::BatchSize, 1 }> m_trueLabels;
     };
 }

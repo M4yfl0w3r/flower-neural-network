@@ -18,6 +18,7 @@ target_sources( neuron
             ${PROJECT_SOURCE_DIR}/src/TensorOperators.cxx
             ${PROJECT_SOURCE_DIR}/src/TensorClass.cxx
             ${PROJECT_SOURCE_DIR}/src/TensorHelpers.cxx
+            ${PROJECT_SOURCE_DIR}/src/Batch.cxx
             ${PROJECT_SOURCE_DIR}/src/Utilities.cxx
             ${PROJECT_SOURCE_DIR}/src/Config.cxx
             ${PROJECT_SOURCE_DIR}/src/Dataset.cxx

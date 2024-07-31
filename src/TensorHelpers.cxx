@@ -25,3 +25,9 @@ export template<typename T, int Cols>
     auto result = Tensor<T, { 1, Cols }>{ data1d };
     return result;
 }
+
+export template <int Rows>
+[[nodiscard]] inline constexpr auto ColumnTensor(auto data)
+{
+    return Tensor<int, { Rows, 1 }>{ data };
+}

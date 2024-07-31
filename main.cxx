@@ -3,7 +3,6 @@ import loss;
 import dataset;
 import config;
 import tensor;
-import batch;
 import dense_layer;
 
 auto main() -> int
@@ -13,10 +12,8 @@ auto main() -> int
     auto dataset = Dataset(Config::IrisPath);
     const auto& [data, labels] = dataset.GetRandomBatch();
 
-    auto rows = Tensor<float, { Config::BatchSize, Config::DataCols }>( data );
-    auto cols = Tensor<int, { Config::BatchSize, 1 }>( labels );
-
-    auto batch = Batch(rows, cols);
+    auto rows = Tensor<float, { Config::BatchSize, Config::DataCols }>(data);
+    auto cols = ColumnTensor<Config::BatchSize>(labels);
 
     auto st   = DenseLayer<
                             LayerParams{ .Inputs = 4, .Neurons = 10 }, // layer params

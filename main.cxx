@@ -11,18 +11,20 @@ auto main() -> int
 
     auto dataset = Dataset(Config::IrisPath);
     const auto& [data, labels] = dataset.GetRandomBatch();
+    const auto rows = Tensor<float, { Config::BatchSize, Config::DataCols }>(data);
+    const auto cols = ColumnTensor<Config::BatchSize>(labels);
 
-    auto rows = Tensor<float, { Config::BatchSize, Config::DataCols }>(data);
-    auto cols = ColumnTensor<Config::BatchSize>(labels);
+    static constexpr auto stLayerParams = LayerParams{ .Inputs = Config::DataCols, .Neurons = 10 };
+    static constexpr auto ndLayerParams = LayerParams{ .Inputs = 10, .Neurons = Config::NumClasses };
 
     auto st   = DenseLayer<
-                            LayerParams{ .Inputs = 4, .Neurons = 10 }, // layer params
+                            stLayerParams,
                             LayerParams{ .Inputs = 10, .Neurons = 4 }, // prev layer params
                             LayerParams{ .Inputs = 10, .Neurons = 10 }  // next layer params
                           > {};
 
     auto nd   = DenseLayer<
-                            LayerParams{ .Inputs = 10, .Neurons = 3 },  // layer params
+                            ndLayerParams,
                             LayerParams{ .Inputs = 10, .Neurons = 10 }, // prev layer params
                             LayerParams{ .Inputs = 10, .Neurons = 3 }   // next layer params
                           > {};

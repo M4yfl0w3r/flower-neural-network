@@ -16,7 +16,7 @@ export template<LayerParams params, LayerParams prevLayer, LayerParams nextLayer
 class DenseLayer final
 {
     using PreviousLayerTensor = Tensor<float, { prevLayer.Inputs, prevLayer.Neurons }>;
-    using NextLayerTensor = Tensor<float, { nextLayer.Inputs, nextLayer.Neurons}>;
+    using NextLayerTensor = Tensor<float, { nextLayer.Inputs, nextLayer.Neurons }>;
 
 public:
     constexpr DenseLayer()

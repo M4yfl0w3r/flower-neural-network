@@ -31,3 +31,9 @@ export template <int Rows>
 {
     return Tensor<int, { Rows, 1 }>{ data };
 }
+
+export template <int Cols>
+[[nodiscard]] inline constexpr auto RowTensor(auto data)
+{
+    return Tensor<float, { 1, Cols }>{ data };
+}

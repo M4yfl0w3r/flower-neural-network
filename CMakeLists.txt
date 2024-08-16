@@ -14,10 +14,10 @@ add_library( neuron )
 target_sources( neuron
     PUBLIC
         FILE_SET CXX_MODULES FILES
-            ${PROJECT_SOURCE_DIR}/src/TensorModule.cxx
-            ${PROJECT_SOURCE_DIR}/src/TensorOperators.cxx
-            ${PROJECT_SOURCE_DIR}/src/TensorClass.cxx
-            ${PROJECT_SOURCE_DIR}/src/TensorHelpers.cxx
+            ${PROJECT_SOURCE_DIR}/src/Tensor/TensorModule.cxx
+            ${PROJECT_SOURCE_DIR}/src/Tensor/TensorOperators.cxx
+            ${PROJECT_SOURCE_DIR}/src/Tensor/TensorClass.cxx
+            ${PROJECT_SOURCE_DIR}/src/Tensor/TensorHelpers.cxx
             ${PROJECT_SOURCE_DIR}/src/Utilities.cxx
             ${PROJECT_SOURCE_DIR}/src/Config.cxx
             ${PROJECT_SOURCE_DIR}/src/Dataset.cxx

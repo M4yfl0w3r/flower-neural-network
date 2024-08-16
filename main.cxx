@@ -31,8 +31,7 @@ auto main() -> int
 
     auto loss = Loss::CategoricalCrossEntropy();
 
-    for (auto i : std::ranges::iota_view(0, Config::Epochs))
-    {
+    for (auto i : std::ranges::iota_view(0, Config::Epochs)) {
         auto o1 = st.ForwardReLU(rows);
         auto o2 = nd.ForwardSoftmax(o1);
 

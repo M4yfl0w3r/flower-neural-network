@@ -22,8 +22,7 @@ public:
             data.push_back(line);
         }
 
-        for (auto i = 0; const auto& row : data)
-        {
+        for (auto i = 0; const auto& row : data) {
             if (i > cfg::DataRows - 1) {
                 break;
             }
@@ -35,8 +34,7 @@ public:
 
             auto j = 0;
 
-            while (std::getline(stream, field, ','))
-            {
+            while (std::getline(stream, field, ',')) {
                 if (field == "Iris-setosa") {
                     label = 0;
                 }

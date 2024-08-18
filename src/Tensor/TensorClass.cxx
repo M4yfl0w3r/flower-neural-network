@@ -228,15 +228,15 @@ public:
     {
         for (const auto& row : m_data) {
             for (const auto& el : row) {
-                std::cout << el << "  ";
+                std::print("{} ", el);
             }
-            std::cout << '\n';
+            std::println("");
         }
     }
 
     constexpr auto PrintShape() const
     {
-        std::cout << "Shape = (" << params.Rows << ", " << params.Cols << ")\n";
+        std::println("Shape = {}, {}", params.Rows, params.Cols);
     }
 
     constexpr auto operator- ()

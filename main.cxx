@@ -9,13 +9,13 @@ auto main() -> int
 {
     using namespace Loss;
 
-    auto dataset = Dataset(Config::IrisPath);
+    auto dataset = Dataset(Config::irisPath);
     const auto& [data, labels] = dataset.GetRandomBatch();
-    const auto rows = Tensor<float, { Config::BatchSize, Config::DataCols }>(data);
-    const auto cols = ColumnTensor<Config::BatchSize>(labels);
+    const auto rows = Tensor<float, { Config::batchSize, Config::dataCols }>(data);
+    const auto cols = ColumnTensor<Config::batchSize>(labels);
 
-    static constexpr auto stLayerParams = LayerParams{ .Inputs = Config::DataCols, .Neurons = 10 };
-    static constexpr auto ndLayerParams = LayerParams{ .Inputs = 10, .Neurons = Config::NumClasses };
+    static constexpr auto stLayerParams = LayerParams{ .Inputs = Config::dataCols, .Neurons = 10 };
+    static constexpr auto ndLayerParams = LayerParams{ .Inputs = 10, .Neurons = Config::numClasses };
 
     auto st   = DenseLayer<
                             stLayerParams,
@@ -31,7 +31,7 @@ auto main() -> int
 
     auto loss = Loss::CategoricalCrossEntropy();
 
-    for (auto i : std::ranges::iota_view(0, Config::Epochs)) {
+    for (auto i : std::ranges::iota_view(0, Config::epochs)) {
         auto o1 = st.ForwardReLU(rows);
         auto o2 = nd.ForwardSoftmax(o1);
 
